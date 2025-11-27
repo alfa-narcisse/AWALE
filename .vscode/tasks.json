@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build SDL2 Project (all src)",
+            "command": "C:/msys64/mingw64/bin/gcc.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/src/*.c",              // tous les fichiers .c dans src/
+                "-I${workspaceFolder}/SDL2/include",       // include SDL2
+                "-L${workspaceFolder}/SDL2/lib",           // lib SDL2
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-o",
+                "${workspaceFolder}/build/game.exe"        // sortie unique dans build/
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compiler: GCC via MSYS2 (all .c in src)"
+        }
+    ]
+}
+
