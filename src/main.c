@@ -7,7 +7,7 @@ int main(int argc, char* argv[]){
 
     TTF_Font* police = load_font("../assets/fonts/font_film.ttf", 40);
     if (!police){
-        stop_engine(police, NULL, renderer);
+        stop_engine(police, renderer);
         return -1;
     }
 
@@ -73,9 +73,9 @@ int main(int argc, char* argv[]){
 
 
     if (!plateauTexture){   
-        stop_engine(police, NULL, renderer);
+        stop_engine(police,  renderer);
         return -1;
     }
-    stop_engine(police, NULL, renderer);
+    stop_engine(police,renderer);
     return 0;
 }
