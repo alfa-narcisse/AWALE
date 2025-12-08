@@ -9,15 +9,32 @@
 
 void drawButton(SDL_Renderer* renderer, Button* button, TTF_Font* police){
     SDL_Color colorText = {255,255,255,255};
-    SDL_Color colorButton = (button->hovered)?(SDL_Color){200,10,10,255}: (SDL_Color){50,50,25,255};
-    SDL_Surface *SurfaceButton = TTF_RenderText_Shaded(police,button->text,sizeof(button->text), colorButton, colorText);
+    Uint32 colorButton = (button->hovered)?SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB32),NULL,100,100,100, 255):SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB32),NULL,120,120,120, 255);
+    SDL_Surface *SurfaceButton = TTF_RenderText_Blended(police,button->text,sizeof(button->text), colorText);
     if (!SurfaceButton){
         fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
         return;
     }
+    SDL_Surface* btnSurface= SDL_CreateSurface((int)button->rect->w, (int)button->rect->h, SDL_PIXELFORMAT_ARGB32);
+    if (!btnSurface){
+        fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
+        return;
+    }
+    SDL_FillSurfaceRect(btnSurface,NULL,colorButton);
+
+    SDL_FRect fondRect ={
+        .x = button->rect->x-5,
+        .y = button->rect->y,
+        .h = button->rect->h+5,
+        .w = button->rect->w+5
+    };
+    SDL_Texture* fondBtn = SDL_CreateTextureFromSurface(renderer, btnSurface);
     SDL_Texture * textureButton = SDL_CreateTextureFromSurface(renderer, SurfaceButton);
+    SDL_RenderTexture(renderer,fondBtn,NULL,&fondRect);
     SDL_RenderTexture(renderer, textureButton, NULL, button->rect);
+    SDL_DestroySurface(btnSurface);
     SDL_DestroySurface(SurfaceButton);
+    SDL_DestroyTexture(fondBtn);
     SDL_DestroyTexture(textureButton);
 };
 
@@ -91,9 +108,9 @@ void displayScores(SDL_Renderer* renderer, TTF_Font*police,bool VsAI, int scoreP
 };
 
 void displayVictory(SDL_Renderer * renderer, TTF_Font* police, int ScorePlayer1, int ScorePlayer2, bool VsAI){
-    char victoryMessage[50];
+    char victoryMessage[15];
     if (ScorePlayer1 == ScorePlayer2){
-        snprintf(victoryMessage, sizeof(victoryMessage), "==EXAEQUO %s", "==");
+        snprintf(victoryMessage, sizeof(victoryMessage), "== EXAEQUO %s", "==");
     }
     else{
         if (VsAI){
@@ -133,7 +150,7 @@ void displayVictory(SDL_Renderer * renderer, TTF_Font* police, int ScorePlayer1,
         .x = (renderer_w - SurfaceVictory->w) / 2.0f, // centered horizontally
         .y = (renderer_h - SurfaceVictory->h) / 2.0f, // centered vertically
         .h = 100,// width
-        .w = 1000 // height
+        .w = 400 // height
     };
 
     SDL_DestroySurface(SurfaceVictory);
@@ -239,7 +256,7 @@ static void drawCercle(int x, int y, int R, SDL_Surface* surface) {
 }
 
 void displayTitleOfGame(SDL_Renderer * renderer, TTF_Font* police){
-    const char* welcomeMessage = "AWALE";
+    const char* welcomeMessage = "AWELE";
     SDL_Color Noire ={
         .a =255,
         .b = 45,
@@ -365,7 +382,7 @@ void displayFinality(
 ){
     scorePlayer1 += getNumPionsOfPlayer(ListePions,true);            
     scorePlayer2 -= getNumPionsOfPlayer(ListePions,false);
-    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    SDL_SetRenderDrawColor(renderer,0,255,255,255);
     SDL_RenderClear(renderer);
     displayVictory(renderer,policePlateau,scorePlayer1, scorePlayer2, VsAI);
     SDL_RenderPresent(renderer);
