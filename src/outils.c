@@ -85,20 +85,22 @@ void inCrementInPos(int PlateauList[12], int pos){
 
 
 void doTheMoveDisplay(
-    SDL_Renderer * plateauRenderer,
-    SDL_Texture* plateauTexture,
+    SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     int POS_TROUS[12][2],
+    int POS_RECT[12][2],
     int PlateauList[12], 
-    int posInit,  
+    int posInit,
+    bool VsAI, 
     bool player1Turn,
-    int* scorePlayer1,
+    int* scorePlayer1, 
     int* scorePlayer2
     )
 {
-    if (PlateauList == NULL || posInit <0 || posInit >=12 || plateauRenderer == NULL || policePlateau == NULL || plateauTexture == NULL || scorePlayer1 == NULL || scorePlayer2 == NULL) return;
+    if (PlateauList == NULL || posInit <0 || posInit >=12 ||  policePlateau == NULL ||  scorePlayer1 == NULL || scorePlayer2 == NULL) return;
     int NBPions = PlateauList[posInit];
     PlateauList[posInit] =0;
+    SDL_Texture * plateauTexture = SDL_CreateTexture(plateauRenderer,SDL_PIXELFORMAT_ARGB32,SDL_TEXTUREACCESS_TARGET,1280,720);
     for (int i=1;i<=NBPions;i++){
         if ((posInit + i)%12 != posInit){// éviter de déposer une pierre dans le trou de départ
             PlateauList[(posInit + i)%12] +=1;
@@ -107,7 +109,11 @@ void doTheMoveDisplay(
                 plateauTexture,
                 policePlateau,
                 POS_TROUS,
+                POS_RECT,
                 PlateauList,
+                *scorePlayer1,
+                *scorePlayer2,
+                VsAI,
                 800
             );
         }
@@ -141,9 +147,19 @@ void doTheMoveDisplay(
                 plateauTexture,
                 policePlateau,
                 POS_TROUS,
+                POS_RECT,
                 PlateauList,
+                *scorePlayer1,
+                *scorePlayer2,
+                VsAI,
                 800
             );
         }
     }
+}
+
+void freeButton(Button *btn){
+    SDL_DestroyTexture(btn->pressed);
+    SDL_DestroyTexture(btn->hover);
+    SDL_DestroyTexture(btn->normal);
 }

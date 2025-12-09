@@ -13,16 +13,16 @@ static void displayScorePlayer(SDL_Renderer*scoreRenderer, TTF_Font* police, int
     char tscorePlayer1[3];
     snprintf(tscorePlayer1, sizeof(tscorePlayer1), "%d", ScorePlayer1);
 
-    char name[4];
-    char namePlayer1[4];
-    snprintf(name, sizeof(name), "%s", player1Turn ? "J-1" : "J-2");
+    char name[3];
+    char namePlayer1[3];
+    snprintf(name, sizeof(name), "%s", player1Turn ? "J1" : "J2");
     snprintf(namePlayer1, sizeof(namePlayer1), "%s", VsAi ? "AI" : name);
 
 
     SDL_Color grisFonce ={
         .a =255,
         .b = 0,
-        .g = 25,
+        .g = 30,
         .r = 51
     };
 
@@ -51,23 +51,24 @@ static void displayScorePlayer(SDL_Renderer*scoreRenderer, TTF_Font* police, int
     }
 
 
-    SDL_FRect ScoreRect = {
-        .x=(player1Turn)? 15+2:1150+2,
-        .y= 250+2,
+    SDL_FRect nameRect = {
+        .x=(player1Turn)? 15+10:1165+10,
+        .y= 250+10,
         .h = 40,
         .w = 60
     };
-    SDL_FRect nameRect = {
-        .x=(player1Turn)? 15+2:1150+2,
-        .y= 470+2,
+    SDL_FRect scoreRect = {
+        .x=(player1Turn)? 15+10:1165+10,
+        .y= 470+10,
         .h = 40,
         .w = 60
     };
 
     SDL_DestroySurface(SurfaceScore);
     SDL_DestroySurface(SurfaceName);
+
     SDL_RenderTexture(scoreRenderer, TextureName, NULL, &nameRect);
-    SDL_RenderTexture (scoreRenderer, TextureScore, NULL, &ScoreRect);
+    SDL_RenderTexture (scoreRenderer, TextureScore, NULL, &scoreRect);
 
     SDL_DestroyTexture(TextureName);
     SDL_DestroyTexture(TextureScore);
@@ -78,42 +79,11 @@ void displayScores(SDL_Renderer* renderer, TTF_Font*police,bool VsAI, int scoreP
     displayScorePlayer(renderer, police, scorePlayer2,false,false);
 };
 
-void displayVictory(SDL_Renderer * victoryRenderer, int ScorePlayer1, int ScorePlayer2, bool VsAI){
-    SDL_Surface* victoryImage;
-
-    if (ScorePlayer1==ScorePlayer2){
-        victoryImage = IMG_Load("../assets/images/equality.png");
-    }
-    else if(ScorePlayer1>ScorePlayer2 && VsAI){
-        victoryImage = IMG_Load("../assets/images/aiWin.png");
-    }
-    else if(ScorePlayer1>ScorePlayer2 && !VsAI){
-        victoryImage = IMG_Load("../assets/images/player1Win.png");
-    }
-    else{
-        victoryImage = IMG_Load("../assets/images/player2Win.png");
-    }
-
-    if (!victoryImage){
-        fprintf("Erreur dans le chargement de la surface: %s", SDL_GetError());
-        return;
-    }
-
-    SDL_FRect victoryRect = {
-        .h = 360,
-        .w = 380,
-        .x = 385,
-        .y = 230
-    };
-    SDL_Texture* victoryTexture = SDL_CreateTextureFromSurface(victoryRenderer, victoryImage);
-    SDL_RenderTexture(victoryRenderer, victoryTexture, NULL, &victoryRect);
-
-    SDL_DestroySurface(victoryImage);
-    SDL_DestroyTexture(victoryTexture);
-}
 
 
-void displayContainsOfHoles(int ListePions[12], SDL_Renderer * renderer, TTF_Font* police, int POS_TROUS[12][2]){
+
+
+void displayContainsOfHoles(int ListePions[12], SDL_Renderer * renderer, TTF_Font* police, int POS_TROUS[12][2], int POS_RECT[12][2]){
     for (int i = 0; i < 12; i++) {
         char pionText[3];
         snprintf(pionText, sizeof(pionText), "%d", ListePions[i]);
@@ -136,15 +106,21 @@ void displayContainsOfHoles(int ListePions[12], SDL_Renderer * renderer, TTF_Fon
             continue;
         }
         SDL_DestroySurface(SurfaceText);
+        SDL_FRect r1 = { .x = POS_RECT[i][0] +30,
+                        .y = POS_RECT[i][1] +10,
+                        .h = 30,
+                        .w = 40
+                    };
 
         SDL_FRect dstRect;
-        dstRect.w = 50; // Largeur fixe pour le texte
-        dstRect.h = 50; // Hauteur fixe pour le texte
+        dstRect.w = 60; // Largeur fixe pour le texte
+        dstRect.h = 70; // Hauteur fixe pour le texte
         dstRect.x = POS_TROUS[i][0] - dstRect.w / 2; // Centrer le texte
         dstRect.y = POS_TROUS[i][1] - dstRect.h / 2; // Centrer le texte
     
         // Dessiner la texture du nombre
         SDL_RenderTexture(renderer, TextureText, NULL, &dstRect);
+        SDL_RenderTexture(renderer,TextureText, NULL, &r1);
         SDL_DestroyTexture(TextureText);
     }
 }
@@ -276,36 +252,19 @@ void displayPlateauWithDelay(
     SDL_Texture*plateauTexture, 
     TTF_Font* policePlateau,
     int POS_TROUS[12][2],
+    int POS_RECT[12][2],
     int ListePions[12],
+    int scorePlayer1,
+    int scorePlayer2,
+    bool VsAI,
     int delayMs
     ){
 
-    SDL_RenderTexture(rendererPlateau,plateauTexture,NULL,NULL);
-    drawPlateauBackground(rendererPlateau, plateauTexture);
-    displayContainsOfHoles(ListePions, rendererPlateau, policePlateau, POS_TROUS);
+    //SDL_RenderTexture(rendererPlateau,plateauTexture,NULL,NULL);
+    displayScores(rendererPlateau, policePlateau,VsAI, scorePlayer1,scorePlayer2);
+    displayContainsOfHoles(ListePions, rendererPlateau, policePlateau, POS_TROUS,POS_RECT);
     SDL_RenderPresent(rendererPlateau);
     SDL_Delay(delayMs); 
 }
 
 //
- void displayFinality(
-    SDL_Renderer*victoryRenderer,
-    TTF_Font*policePlateau,
-    Button *btn_menu_v,
-    Button *btn_replay_v,
-    Button *btn_exit_v,
-    int ListePions[12],
-    int scorePlayer1,
-    int scorePlayer2,
-    bool VsAI
-){
-
-    scorePlayer1 += getNumPionsOfPlayer(ListePions,true);         
-    scorePlayer2 -= getNumPionsOfPlayer(ListePions,false);
-    displayVictory(victoryRenderer,scorePlayer1, scorePlayer2,VsAI);
-    renderbutton(victoryRenderer,btn_replay_v);
-    renderbutton(victoryRenderer, btn_menu_v);
-    renderbutton(victoryRenderer, btn_exit_v);
-    
-    SDL_RenderPresent(victoryRenderer);
-}

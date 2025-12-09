@@ -3,6 +3,9 @@
 #include <stdbool.h>
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
+
+
 // ==== NOTION IMPORTANTE ====
 // Dans toutes les fonctions ci-dessous, on considère que le plateau est représenté par un tableau*d'entiers de taille 12,
 // où les indices 0 à 5 représentent les trous du joueur 1 (potentiellement IA lorsqu'on utilise ces fonctions dans ce contexte)
@@ -25,6 +28,7 @@ bool pointDansRect(float x, float y, SDL_FRect r);
 
 void renderbutton(SDL_Renderer *ren,Button *b);
 
+void freeButton(Button *btn);
 
 
 
@@ -56,14 +60,15 @@ void inCrementInPos(int PlateauList[12], int pos);
 // Met à jour les scores des joueurs
 
 void doTheMoveDisplay(
-    SDL_Renderer * renderer,
-    SDL_Texture* plateauTexture,
+    SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     int POS_TROUS[12][2],
+    int POS_RECT[12][2],
     int PlateauList[12], 
-    int posInit,  
+    int posInit,
+    bool VsAI, 
     bool player1Turn,
-    int* scorePlayer1,
+    int* scorePlayer1, 
     int* scorePlayer2
 );
 

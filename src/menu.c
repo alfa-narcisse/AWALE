@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "outils.h"
+#include "run_game.h"
 #include <stdlib.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -17,7 +18,7 @@
 
 
 
-void AfficheHelp(SDL_Window *win, bool*VsAiMode, bool *twoPlayersMode);
+void AfficheHelp(SDL_Window *win, int ListePions[12]);
 
 
 // type des boutons
@@ -28,8 +29,16 @@ void AfficheHelp(SDL_Window *win, bool*VsAiMode, bool *twoPlayersMode);
 
 // Creation de la fontion affiche help
 
+void popUpRetakeGame(
+                    SDL_Window *window,
+                    int ListePions[12],
+                    bool *twoPlayersMode,
+                    bool *VsAI,
+                    bool player1Turn
+                    );// dans le cas où on trouve une solution pour enregistrer l'état du jeu et pour pouvoir reprendre à la prochaine fois.
+                    // Cela éxige la création d'un boutton Reprendre
 
-void AfficheMenu( SDL_Window *win, bool*VsAiMode, bool *twoPlayersMode) {
+void AfficheMenu( SDL_Window *win, int ListePions[12]) {
     SDL_Event MenuEvent = {};
     SDL_Renderer *MenuRenderer =SDL_CreateRenderer(win,NULL);
     // Creation de la texture de l'arriere plan
@@ -41,6 +50,8 @@ void AfficheMenu( SDL_Window *win, bool*VsAiMode, bool *twoPlayersMode) {
 
     bool isopen=true;
     bool wanthelp=false;
+    bool VsAiMode = false;
+    bool twoPlayersMode = false;
 
     // Rectangle pour le menu principal
     SDL_FRect mainRect ={0,0,1280,720};
@@ -137,15 +148,15 @@ void AfficheMenu( SDL_Window *win, bool*VsAiMode, bool *twoPlayersMode) {
                     if (btn_ModeAI.isHover && btn_ModeAI.isPressed) {
                         btn_ModeAI.isPressed = false;
                         isopen = false;
-                        *VsAiMode = true;
-                        *twoPlayersMode = false;
+                        VsAiMode = true;
+                        twoPlayersMode = false;
                      };
 
                     if (btn_ModeVSJ.isHover && btn_ModeVSJ.isPressed) {
                         btn_ModeVSJ.isPressed = false;
                         isopen = false;
-                        *VsAiMode = false;
-                        *twoPlayersMode = true;
+                        VsAiMode = false;
+                        twoPlayersMode = true;
                     }
                     break;
             }
@@ -178,10 +189,13 @@ void AfficheMenu( SDL_Window *win, bool*VsAiMode, bool *twoPlayersMode) {
     SDL_DestroyTexture(btn_ModeVSJ.normal);
     SDL_DestroyTexture(background);
     SDL_DestroyRenderer(MenuRenderer);
-    if (wanthelp) AfficheHelp(win, VsAiMode, twoPlayersMode);
-
+    if (wanthelp) AfficheHelp(win, ListePions);
+    // à ajouter l'action à faire lorsque l'utilisateur choisit l'une des options ai ou 2 players.
+    else if( VsAiMode || twoPlayersMode){
+        launch_game(win,ListePions, VsAiMode, true,9,0,0);//Pour le moment, on met profondeur à 9
+    }
 }
-void AfficheHelp(SDL_Window* win, bool*VsAiMode, bool *twoPlayersMode) {
+void AfficheHelp(SDL_Window* win, int ListePions[12]) {
     SDL_Event Helpevent;
     SDL_Renderer *helprenderer=SDL_CreateRenderer(win,NULL);
     SDL_Texture *backgroundHelp = IMG_LoadTexture(helprenderer,"../assets/images/backgroundhelp.png");
@@ -193,9 +207,9 @@ void AfficheHelp(SDL_Window* win, bool*VsAiMode, bool *twoPlayersMode) {
     // Creation du bouton qui permet de sortir de l'affichage help
     Button btn_Exithelp;
     btn_Exithelp.rect=(SDL_FRect){Menu_widht-100,270,b_widht,b_height};
-    btn_Exithelp.normal  = IMG_LoadTexture(helprenderer,"../assets/images/buttonExit.png");
-    btn_Exithelp.hover   = IMG_LoadTexture(helprenderer, "../assets/images/buttonExitH.png");
-    btn_Exithelp.pressed = IMG_LoadTexture(helprenderer, "../assets/images/buttonExitP.png");
+    btn_Exithelp.normal  = IMG_LoadTexture(helprenderer,"../assets/images/buttonMenu.png");
+    btn_Exithelp.hover   = IMG_LoadTexture(helprenderer, "../assets/images/buttonMenuH.png");
+    btn_Exithelp.pressed = IMG_LoadTexture(helprenderer, "../assets/images/buttonMenuP.png");
     btn_Exithelp.isHover = false;
     btn_Exithelp.isPressed = false;
     // Fin de creation
@@ -251,7 +265,7 @@ void AfficheHelp(SDL_Window* win, bool*VsAiMode, bool *twoPlayersMode) {
         SDL_Quit();
     }
     else {
-        AfficheMenu(win, VsAiMode, twoPlayersMode);
+        AfficheMenu(win, ListePions);
     }
 
 

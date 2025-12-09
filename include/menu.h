@@ -6,5 +6,5 @@
 
 
 
-void AfficheMenu( SDL_Window *win);
+void AfficheMenu( SDL_Window *win, int ListePions[12]);
 #endif // menu_h

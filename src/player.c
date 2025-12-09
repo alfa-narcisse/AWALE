@@ -1,6 +1,6 @@
 #include "player.h"
 #include "outils.h"
-#include "event.h"
+#include "run_game.h"
 #include <stdbool.h>
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -8,7 +8,7 @@
 
 // Ici, vous pouvez implémenter des fonctions liées aux joueurs,
 // comme la gestion des tours, les interactions avec l'IA, etc.
-
+/* 
 int executePlayerCommand(
     SDL_Event *event,
     SDL_Renderer * renderer,
@@ -42,4 +42,4 @@ int executePlayerCommand(
         return 0;
     }
     return -1;
- }
+ } */
