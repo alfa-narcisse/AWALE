@@ -4,14 +4,33 @@
 #include "display.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
 typedef struct Button{
-    SDL_FRect* rect;
-    char text[10];
-    bool pressed;
-    bool hovered;
-}Button;
+    SDL_FRect rect;
+    SDL_Texture* normal;
+    SDL_Texture* hover;
+    SDL_Texture* pressed;
+    bool isHover;
+    bool isPressed;
+} Button;
 
 
+bool pointDansRect(float x, float y, SDL_FRect r) {
+    return (x >= r.x && x <= r.x + r.w &&
+            y >= r.y && y <= r.y + r.h);
+}
+
+// Dessin du bouton en fonction de son état
+void renderbutton(SDL_Renderer *ren,Button *b) {
+    SDL_Texture* tex = b->normal;
+
+    if (b->isPressed && b->isHover)
+        tex = b->pressed;
+    else if (b->isHover)
+        tex = b->hover;
+
+    SDL_RenderTexture(ren, tex, NULL, &b->rect);
+}
 
 // Copier le plateau
 void CopyPlateau(int srcListe[12], int dstListe[12]){
@@ -66,42 +85,34 @@ void inCrementInPos(int PlateauList[12], int pos){
 
 
 void doTheMoveDisplay(
-    int POS_TROUS[12][2],
-    int PlateauList[12],
-    int pos,
-    SDL_Renderer * renderer,
-    TTF_Font* policePlateau,
-    TTF_Font* policeButton,
+    SDL_Renderer * plateauRenderer,
     SDL_Texture* plateauTexture,
+    TTF_Font* policePlateau,
+    int POS_TROUS[12][2],
+    int PlateauList[12], 
+    int posInit,  
     bool player1Turn,
-    int*scorePlayer1,
-    int* scorePlayer2,
-    bool VsAI,
-    Button *btn
+    int* scorePlayer1,
+    int* scorePlayer2
     )
 {
-    if (PlateauList == NULL || pos <0 || pos >=12 || renderer == NULL || policePlateau == NULL || plateauTexture == NULL || scorePlayer1 == NULL || scorePlayer2 == NULL) return;
-    int NBPions = PlateauList[pos];
-    PlateauList[pos] =0;
+    if (PlateauList == NULL || posInit <0 || posInit >=12 || plateauRenderer == NULL || policePlateau == NULL || plateauTexture == NULL || scorePlayer1 == NULL || scorePlayer2 == NULL) return;
+    int NBPions = PlateauList[posInit];
+    PlateauList[posInit] =0;
     for (int i=1;i<=NBPions;i++){
-        if ((pos + i)%12 != pos){// éviter de déposer une pierre dans le trou de départ
-            PlateauList[(pos + i)%12] +=1;
-            displayAllWithDelay(
-                renderer,
+        if ((posInit + i)%12 != posInit){// éviter de déposer une pierre dans le trou de départ
+            PlateauList[(posInit + i)%12] +=1;
+            displayPlateauWithDelay(
+                plateauRenderer,
                 plateauTexture,
                 policePlateau,
-                policeButton,
-                PlateauList,
                 POS_TROUS,
-                *scorePlayer1,
-                *scorePlayer2,
-                VsAI,
-                800,
-                btn
+                PlateauList,
+                800
             );
         }
     }
-    int finalPos = (pos + NBPions) % 12; // position finale
+    int finalPos = (posInit + NBPions) % 12; // position finale
     int minRef = (player1Turn) ? 6: 0;
     int maxRef = (player1Turn) ? 11 : 5;
     int NewPlateau [12];
@@ -120,23 +131,18 @@ void doTheMoveDisplay(
         } else {
             *scorePlayer2 += scoreGained;
         }
-        finalPos = (pos + NBPions) % 12;
+        finalPos = (posInit + NBPions) % 12;
         // Afficher la prise étape par étape
         while (finalPos >= minRef && finalPos <= maxRef && (PlateauList [finalPos] == 2 || PlateauList[finalPos] ==3)){
             PlateauList[finalPos] =0;
             finalPos -=1;
-            displayAllWithDelay(
-                renderer,
+            displayPlateauWithDelay(
+                plateauRenderer,
                 plateauTexture,
                 policePlateau,
-                policeButton,
-                PlateauList,
                 POS_TROUS,
-                *scorePlayer1,
-                *scorePlayer2,
-                VsAI,
-                800,
-                btn
+                PlateauList,
+                800
             );
         }
     }

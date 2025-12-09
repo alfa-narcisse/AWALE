@@ -10,14 +10,25 @@
 // player1Turn est un booléen qui indique si c'est le tour du joueur 1 (true) ou du joueur 2 (false).
 // ==========================
 
+
+// tout ce qui concerne le button
 typedef struct Button{
-    SDL_FRect* rect;
-    char text[10];
-    bool pressed;
-    bool hovered;
-}Button;
+    SDL_FRect rect;
+    SDL_Texture* normal;
+    SDL_Texture* hover;
+    SDL_Texture* pressed;
+    bool isHover;
+    bool isPressed;
+} Button;
+
+bool pointDansRect(float x, float y, SDL_FRect r);
+
+void renderbutton(SDL_Renderer *ren,Button *b);
 
 
+
+
+// Tout ce qui concerne le plateau
 // Copier le plateau
 void CopyPlateau(int srcListe[12], int dstListe[12]);
 
@@ -45,18 +56,15 @@ void inCrementInPos(int PlateauList[12], int pos);
 // Met à jour les scores des joueurs
 
 void doTheMoveDisplay(
+    SDL_Renderer * renderer,
+    SDL_Texture* plateauTexture,
+    TTF_Font* policePlateau,
     int POS_TROUS[12][2],
     int PlateauList[12], 
-    int pos, 
-    SDL_Renderer * renderer, 
-    TTF_Font* policePlateau,
-    TTF_Font*policeButton, 
-    SDL_Texture* plateauTexture,
+    int posInit,  
     bool player1Turn,
     int* scorePlayer1,
-    int* scorePlayer2,
-    bool VsAI,
-    Button *btn
+    int* scorePlayer2
 );
 
 #endif // OUTILS_H

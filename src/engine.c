@@ -22,15 +22,13 @@ SDL_Renderer* run_engine(void){
         return NULL;
     }
     SDL_Window* fenetre;
-    SDL_Renderer* renderer; 
-    bool p = SDL_CreateWindowAndRenderer("Game", WINDOW_WIDTH, WINDOW_HEIGHT, 
-                                         SDL_WINDOW_ALWAYS_ON_TOP, 
-                                         &fenetre, &renderer);
-    if (!p) {
+     
+    fenetre = SDL_CreateWindow("Game", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_ALWAYS_ON_TOP);
+    if (!fenetre) {
         fprintf(stderr, "Erreur de création de la fenêtre et du renderer: %s\n", SDL_GetError());
         return NULL;
     }
-    return renderer;
+    return fenetre;
 }
 
 TTF_Font* load_font(const char* font_path, int font_size){
@@ -42,13 +40,25 @@ TTF_Font* load_font(const char* font_path, int font_size){
     return police;
 }
 
-void stop_engine(SDL_Renderer*renderer, TTF_Font* ListFonts[], int nFont){
-    for (int i =0;i<nFont; i++){
+void stop_features(SDL_Renderer*ListRenderers[], int nbRenderers,SDL_Texture* ListTextures[],int nbTextures ,TTF_Font* ListFonts[], int nbFonts){
+    // Pour fermer toutes les polices utilisées
+    for (int i=0;i<nbFonts;i++){
         TTF_CloseFont(ListFonts[i]);
     }
-    SDL_Window* fenetre = SDL_GetRenderWindow(renderer);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(fenetre);
+
+    // Pour fermer toutes textures utilisées
+    for (int i= 0; i<nbTextures; i++){
+        SDL_DestroyTexture(ListTextures[i]);
+    }
+
+    //Pour détruire tous les renderers
+    for (int i=0; i<nbRenderers;i++){
+        SDL_DestroyRenderer(ListRenderers[i]);
+    }
+}
+
+void stop_engine(SDL_Window*window){
     TTF_Quit();
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }

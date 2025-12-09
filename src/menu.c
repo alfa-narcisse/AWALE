@@ -1,5 +1,5 @@
 #include "menu.h"
-
+#include "outils.h"
 #include <stdlib.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -21,32 +21,11 @@ void AfficheHelp(SDL_Window *win);
 
 
 // type des boutons
-typedef struct {
-    SDL_FRect rect;
-    SDL_Texture* normal;
-    SDL_Texture* hover;
-    SDL_Texture* pressed;
-    bool isHover;
-    bool isPressed;
-} Button;
+
 
 
 // fonction pour verifier si on est dans un rectangle ou pas
-bool pointDansRect(float x, float y, SDL_FRect r) {
-    return (x >= r.x && x <= r.x + r.w &&
-            y >= r.y && y <= r.y + r.h);
-}
-// Dessin du bouton en fonction de son état
-void renderbutton(SDL_Renderer *ren,Button *b) {
-    SDL_Texture* tex = b->normal;
 
-    if (b->isPressed && b->isHover)
-        tex = b->pressed;
-    else if (b->isHover)
-        tex = b->hover;
-
-    SDL_RenderTexture(ren, tex, NULL, &b->rect);
-}
 // Creation de la fontion affiche help
 
 

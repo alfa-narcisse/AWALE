@@ -5,10 +5,7 @@
 #include <SDL3_image/SDL_image.h>
 #include "outils.h"
 
-// Affichage des boutons
-void drawButton(SDL_Renderer* renderer, Button* button, TTF_Font* police);
-
-
+// Affichage des bouto
 //Afficher le score des joueurs dans le coin inférieur gauche de l'écran
 void displayScores(SDL_Renderer* renderer, TTF_Font*police,bool VsAI, int scorePlayer1, int ScorePlayer2);
 
@@ -31,23 +28,21 @@ void drawPlateauBackground(SDL_Renderer * renderer, SDL_Texture* plateauTexture)
 SDL_Texture* createSurfaceTexturePlateau(SDL_Renderer * renderer);
 
 //Afficher tout avec un délai
-void displayAllWithDelay(
-    SDL_Renderer * renderer,
+void displayPlateauWithDelay(
+    SDL_Renderer * rendererPlateau,
     SDL_Texture*plateauTexture, 
     TTF_Font* policePlateau,
-    TTF_Font* policeButton,
-    int ListePions[12],
     int POS_TROUS[12][2],
-    int scorePlayer1,
-    int scorePlayer2,
-    bool VsAI,
-    int delayMs,
-    Button* btn
+    int ListePions[12],
+    int delayMs
 );
 
 void displayFinality(
-    SDL_Renderer*renderer,
+    SDL_Renderer*victoryRenderer,
     TTF_Font*policePlateau,
+    Button *btn_menu_v,
+    Button *btn_replay_v,
+    Button *btn_exit_v,
     int ListePions[12],
     int scorePlayer1,
     int scorePlayer2,

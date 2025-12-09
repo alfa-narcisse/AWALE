@@ -7,96 +7,67 @@
 #include "outils.h"
 
 
-void drawButton(SDL_Renderer* renderer, Button* button, TTF_Font* police){
-    SDL_Color colorText = {255,255,255,255};
-    Uint32 colorButton = (button->hovered)?SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB32),NULL,100,100,100, 255):SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB32),NULL,120,120,120, 255);
-    SDL_Surface *SurfaceButton = TTF_RenderText_Blended(police,button->text,sizeof(button->text), colorText);
-    if (!SurfaceButton){
-        fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
-        return;
-    }
-    SDL_Surface* btnSurface= SDL_CreateSurface((int)button->rect->w, (int)button->rect->h, SDL_PIXELFORMAT_ARGB32);
-    if (!btnSurface){
-        fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
-        return;
-    }
-    SDL_FillSurfaceRect(btnSurface,NULL,colorButton);
 
-    SDL_FRect fondRect ={
-        .x = button->rect->x-5,
-        .y = button->rect->y,
-        .h = button->rect->h+5,
-        .w = button->rect->w+5
-    };
-    SDL_Texture* fondBtn = SDL_CreateTextureFromSurface(renderer, btnSurface);
-    SDL_Texture * textureButton = SDL_CreateTextureFromSurface(renderer, SurfaceButton);
-    SDL_RenderTexture(renderer,fondBtn,NULL,&fondRect);
-    SDL_RenderTexture(renderer, textureButton, NULL, button->rect);
-    SDL_DestroySurface(btnSurface);
-    SDL_DestroySurface(SurfaceButton);
-    SDL_DestroyTexture(fondBtn);
-    SDL_DestroyTexture(textureButton);
-};
 
-static void displayScorePlayer(SDL_Renderer * renderer, TTF_Font* police, int ScorePlayer1,bool VsAi, bool player1Turn){
+static void displayScorePlayer(SDL_Renderer*scoreRenderer, TTF_Font* police, int ScorePlayer1,bool VsAi, bool player1Turn){
     char tscorePlayer1[3];
     snprintf(tscorePlayer1, sizeof(tscorePlayer1), "%d", ScorePlayer1);
 
-    char name[5];
-    char namePlayer1[5];
+    char name[4];
+    char namePlayer1[4];
     snprintf(name, sizeof(name), "%s", player1Turn ? "J-1" : "J-2");
     snprintf(namePlayer1, sizeof(namePlayer1), "%s", VsAi ? "AI" : name);
 
 
-    SDL_Color Noire ={
+    SDL_Color grisFonce ={
         .a =255,
-        .b = 45,
-        .g = 100,
-        .r = 100
+        .b = 0,
+        .g = 25,
+        .r = 51
     };
 
-    SDL_Surface *SurfaceScore = TTF_RenderText_Blended(police, tscorePlayer1,sizeof(tscorePlayer1), Noire);
+    SDL_Surface *SurfaceScore = TTF_RenderText_Blended(police, tscorePlayer1,sizeof(tscorePlayer1), grisFonce);
     if(!SurfaceScore){
         fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
         return;
     }
-    SDL_Surface *SurfaceName = TTF_RenderText_Blended(police, namePlayer1,sizeof(namePlayer1), Noire);
+    SDL_Surface *SurfaceName = TTF_RenderText_Blended(police, namePlayer1,sizeof(namePlayer1), grisFonce);
     if(!SurfaceName){
         fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
         return;
     }
 
-    SDL_Texture *TextureScore = SDL_CreateTextureFromSurface(renderer, SurfaceScore);
+    SDL_Texture *TextureScore = SDL_CreateTextureFromSurface(scoreRenderer, SurfaceScore);
     if(!TextureScore){
         fprintf(stderr, "Erreur de création de la texture: %s\n", SDL_GetError());
         SDL_DestroySurface(SurfaceScore);
         return;
     }
-    SDL_Texture *TextureName = SDL_CreateTextureFromSurface(renderer, SurfaceName);
+    SDL_Texture *TextureName = SDL_CreateTextureFromSurface(scoreRenderer, SurfaceName);
     if(!TextureName){
         fprintf(stderr, "Erreur de création de la texture: %s\n", SDL_GetError());
         SDL_DestroySurface(SurfaceName);
         return;
     }
-    int renderer_w = 0, renderer_h = 0;
-    SDL_GetCurrentRenderOutputSize(renderer, &renderer_w, &renderer_h); // dynamic renderer/window size
+
+
     SDL_FRect ScoreRect = {
-        .x=(player1Turn)? 55:1550,
-        .y= 440,
-        .h = 20,
-        .w = 30
+        .x=(player1Turn)? 15:1150,
+        .y= 250,
+        .h = 40,
+        .w = 60
     };
     SDL_FRect nameRect = {
-        .x=(player1Turn)? 55:1550,
-        .y= 270,
-        .h = 20,
-        .w = 30
+        .x=(player1Turn)? 15:1150,
+        .y= 470,
+        .h = 40,
+        .w = 60
     };
 
     SDL_DestroySurface(SurfaceScore);
     SDL_DestroySurface(SurfaceName);
-    SDL_RenderTexture(renderer, TextureName, NULL, &nameRect);
-    SDL_RenderTexture (renderer, TextureScore, NULL, &ScoreRect);
+    SDL_RenderTexture(scoreRenderer, TextureName, NULL, &nameRect);
+    SDL_RenderTexture (scoreRenderer, TextureScore, NULL, &ScoreRect);
 
     SDL_DestroyTexture(TextureName);
     SDL_DestroyTexture(TextureScore);
@@ -107,55 +78,38 @@ void displayScores(SDL_Renderer* renderer, TTF_Font*police,bool VsAI, int scoreP
     displayScorePlayer(renderer, police, scorePlayer2,false,false);
 };
 
-void displayVictory(SDL_Renderer * renderer, TTF_Font* police, int ScorePlayer1, int ScorePlayer2, bool VsAI){
-    char victoryMessage[15];
-    if (ScorePlayer1 == ScorePlayer2){
-        snprintf(victoryMessage, sizeof(victoryMessage), "== EXAEQUO %s", "==");
+void displayVictory(SDL_Renderer * victoryRenderer, int ScorePlayer1, int ScorePlayer2, bool VsAI){
+    SDL_Surface* victoryImage;
+
+    if (ScorePlayer1==ScorePlayer2){
+        victoryImage = IMG_Load("../assets/images/equality.png");
+    }
+    else if(ScorePlayer1>ScorePlayer2 && VsAI){
+        victoryImage = IMG_Load("../assets/images/aiWin.png");
+    }
+    else if(ScorePlayer1>ScorePlayer2 && !VsAI){
+        victoryImage = IMG_Load("../assets/images/player1Win.png");
     }
     else{
-        if (VsAI){
-            snprintf(victoryMessage, sizeof(victoryMessage), "WINNER: %s", (ScorePlayer1>ScorePlayer2)?"AI":"Joueur 2");
-        }
-        else{
-            snprintf(victoryMessage, sizeof(victoryMessage), "WINNER: %s", (ScorePlayer1>ScorePlayer2)?"Joueur 1":"Joueur 2");
-        }
+        victoryImage = IMG_Load("../assets/images/player2Win.png");
     }
 
-    SDL_Color Noire ={
-        .a =255,
-        .b = 45,
-        .g = 100,
-        .r = 100
-    };
-    SDL_Color yellow= {
-        .a = 255,
-        .b = 255,
-        .g = 255,
-        .r =0
-    };
-    SDL_Surface *SurfaceVictory = TTF_RenderText_Shaded(police, victoryMessage, sizeof(victoryMessage), Noire, yellow);
-    if(!SurfaceVictory){
-        fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
-        return;
-    }   
-    SDL_Texture *TextureVictory = SDL_CreateTextureFromSurface(renderer, SurfaceVictory);
-    if(!TextureVictory){
-        fprintf(stderr, "Erreur de création de la texture: %s\n", SDL_GetError());
-        SDL_DestroySurface(SurfaceVictory);
+    if (!victoryImage){
+        fprintf("Erreur dans le chargement de la surface: %s", SDL_GetError());
         return;
     }
-    int renderer_w = 0, renderer_h = 0;
-    SDL_GetCurrentRenderOutputSize(renderer, &renderer_w, &renderer_h); // dynamic renderer/window size
-    SDL_FRect VictoryRect = {
-        .x = (renderer_w - SurfaceVictory->w) / 2.0f, // centered horizontally
-        .y = (renderer_h - SurfaceVictory->h) / 2.0f, // centered vertically
-        .h = 100,// width
-        .w = 400 // height
-    };
 
-    SDL_DestroySurface(SurfaceVictory);
-    SDL_RenderTexture   (renderer, TextureVictory, NULL, &VictoryRect);
-    SDL_DestroyTexture(TextureVictory);
+    SDL_FRect victoryRect = {
+        .h = 360,
+        .w = 380,
+        .x = 385,
+        .y = 230
+    };
+    SDL_Texture* victoryTexture = SDL_CreateTextureFromSurface(victoryRenderer, victoryImage);
+    SDL_RenderTexture(victoryRenderer, victoryTexture, NULL, &victoryRect);
+
+    SDL_DestroySurface(victoryImage);
+    SDL_DestroyTexture(victoryTexture);
 }
 
 
@@ -206,22 +160,6 @@ SDL_Texture* loadPlateauBackground(SDL_Renderer * renderer, const char* filepath
     return texture;
 }
 
-void drawPlateauBackground(SDL_Renderer * renderer, SDL_Texture* plateauTexture){
-    if (!plateauTexture) return;
-    
-    float t_w = 0, t_h = 0;
-    // dynamic texture size
-    SDL_GetTextureSize(plateauTexture, &t_w, &t_h);
-    SDL_FRect dstRect = {
-        .x = 25,
-        .y = 100,
-        .w = (float)t_w,
-        .h = (float)t_h,
-    };
-
-    SDL_RenderTexture(renderer, plateauTexture, NULL, &dstRect);
-}
-
 
 // Plateau de jeu (Pour essai)
 static void drawCercle(int x, int y, int R, SDL_Surface* surface) {
@@ -253,40 +191,6 @@ static void drawCercle(int x, int y, int R, SDL_Surface* surface) {
     }
     
     SDL_UnlockSurface(surface);
-}
-
-void displayTitleOfGame(SDL_Renderer * renderer, TTF_Font* police){
-    const char* welcomeMessage = "AWELE";
-    SDL_Color Noire ={
-        .a =255,
-        .b = 45,
-        .g = 100,
-        .r = 100
-    };
-    SDL_Surface *SurfaceText = TTF_RenderText_Blended(police, welcomeMessage,sizeof(welcomeMessage), Noire);
-    if(!SurfaceText){
-        fprintf(stderr, "Erreur de création du texte: %s\n", SDL_GetError());
-        return;
-    } 
- 
-    
-    SDL_Texture*pTextureText = SDL_CreateTextureFromSurface(renderer,SurfaceText);
-    if (!pTextureText){
-        fprintf(stderr, "Erreur de création de la texture du texte: %s\n", SDL_GetError());
-        SDL_DestroySurface(SurfaceText);
-        return;
-    }
-    int r_w =0, r_h=0;
-    SDL_GetCurrentRenderOutputSize(renderer, &r_w, &r_h);
-    SDL_FRect dstTextRect;
-    dstTextRect.x = r_w / 2 - SurfaceText->w / 2;
-    dstTextRect.y = 10;
-    dstTextRect.w = SurfaceText->w;
-    dstTextRect.h = SurfaceText->h;
-    
-    SDL_DestroySurface(SurfaceText);
-    SDL_RenderTexture(renderer, pTextureText, NULL, &dstTextRect);
-    SDL_DestroyTexture(pTextureText);  
 }
 
 
@@ -346,45 +250,41 @@ SDL_Texture* createSurfaceTexturePlateau(SDL_Renderer * renderer){
 }
 
 
-void displayAllWithDelay(
-    SDL_Renderer * renderer,
+void displayPlateauWithDelay(
+    SDL_Renderer * rendererPlateau,
     SDL_Texture*plateauTexture, 
     TTF_Font* policePlateau,
-    TTF_Font* policeButton,
-    int ListePions[12],
     int POS_TROUS[12][2],
-    int scorePlayer1,
-    int scorePlayer2,
-    bool VsAI,
-    int delayMs,
-    Button* btn
+    int ListePions[12],
+    int delayMs
     ){
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    drawPlateauBackground(renderer, plateauTexture);
-    displayContainsOfHoles(ListePions, renderer, policePlateau, POS_TROUS);
-    displayTitleOfGame(renderer, policePlateau);
-    drawButton(renderer, btn, policeButton);
-    displayScores(renderer, policePlateau,VsAI, scorePlayer1, scorePlayer2);
-    SDL_RenderPresent(renderer);
+    SDL_RenderTexture(rendererPlateau,plateauTexture,NULL,NULL);
+    drawPlateauBackground(rendererPlateau, plateauTexture);
+    displayContainsOfHoles(ListePions, rendererPlateau, policePlateau, POS_TROUS);
+    SDL_RenderPresent(rendererPlateau);
     SDL_Delay(delayMs); 
 }
 
-
-void displayFinality(
-    SDL_Renderer*renderer,
+//
+int displayFinality(
+    SDL_Renderer*victoryRenderer,
     TTF_Font*policePlateau,
+    Button *btn_menu_v,
+    Button *btn_replay_v,
+    Button *btn_exit_v,
     int ListePions[12],
     int scorePlayer1,
     int scorePlayer2,
     bool VsAI
 ){
-    scorePlayer1 += getNumPionsOfPlayer(ListePions,true);            
+
+    scorePlayer1 += getNumPionsOfPlayer(ListePions,true);         
     scorePlayer2 -= getNumPionsOfPlayer(ListePions,false);
-    SDL_SetRenderDrawColor(renderer,0,255,255,255);
-    SDL_RenderClear(renderer);
-    displayVictory(renderer,policePlateau,scorePlayer1, scorePlayer2, VsAI);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(5000);
+    displayVictory(victoryRenderer,scorePlayer1, scorePlayer2,VsAI);
+    renderbutton(victoryRenderer,btn_replay_v);
+    renderbutton(victoryRenderer, btn_menu_v);
+    renderbutton(victoryRenderer, btn_exit_v);
+    
+    SDL_RenderPresent(victoryRenderer);
 }
