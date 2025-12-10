@@ -52,14 +52,14 @@ static void displayScorePlayer(SDL_Renderer*scoreRenderer, TTF_Font* police, int
 
 
     SDL_FRect nameRect = {
-        .x=(player1Turn)? 15+10:1165+10,
-        .y= 250+10,
+        .x=(player1Turn)? 15+20:1165+20,
+        .y= 250+20,
         .h = 40,
         .w = 60
     };
     SDL_FRect scoreRect = {
-        .x=(player1Turn)? 15+10:1165+10,
-        .y= 470+10,
+        .x=(player1Turn)? 15+20:1165+20,
+        .y= 470+30,
         .h = 40,
         .w = 60
     };
@@ -106,8 +106,8 @@ void displayContainsOfHoles(int ListePions[12], SDL_Renderer * renderer, TTF_Fon
             continue;
         }
         SDL_DestroySurface(SurfaceText);
-        SDL_FRect r1 = { .x = POS_RECT[i][0] +30,
-                        .y = POS_RECT[i][1] +10,
+        SDL_FRect r1 = { .x = POS_RECT[i][0] +60,
+                        .y = POS_RECT[i][1] +20,
                         .h = 30,
                         .w = 40
                     };
