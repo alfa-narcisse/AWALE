@@ -671,7 +671,6 @@ void confirmGoToMenuPopUp(
     }
     else if (quitDirectly){
         TTF_Quit();
-        SDL_DestroyRenderer(confirmRenderer);
         SDL_DestroyWindow(window);
     }
 }
