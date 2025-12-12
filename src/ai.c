@@ -15,7 +15,6 @@ static int doTheMovePos(int PlateauList[12], int pos, bool AI_Turn){
     int NBPions = PlateauList[pos];
     PlateauList[pos] =0;
     int i = 1;
-    int copyNbPions= NBPions;
     while (0<NBPions){
         if ((pos + i)%12 != pos){// éviter de déposer une pierre dans le trou de départ
             PlateauList[(pos + i)%12] +=1;
@@ -23,7 +22,7 @@ static int doTheMovePos(int PlateauList[12], int pos, bool AI_Turn){
         }
         i++;
     }
-    int finalPos = (pos + copyNbPions) % 12; // position finale
+    int finalPos = (pos + i-1) % 12; // position finale à corriger car dans le cas où on ne met pas dans la positio de départ, c'est faux.
     int minRef = (AI_Turn) ? 6: 0;
     int maxRef = (AI_Turn) ? 11 : 5;
     int scoreGained =0;
@@ -59,8 +58,7 @@ static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
     int nbPos = GetPossibleMoves(PlateauList, possibleMoves, AI_Turn);
     int valRef = (AI_Turn) ? -INFINITY : INFINITY;// valeur de référence pour la comparaison
     if (nbPos ==0){
-        // Pas de coup possible, on est à la fin du jeu- On met beaucoup de poids car c'est une situaation
-        //favorable pour soit meme (si AI_Turn) ou défavorable pour l'adversaire
+        // Pas de coup possible, dans le cas où on ne peut plus nourir l'adversaire
         bestChoice.scorePlateau = getNumPionsOfPlayer(PlateauList, AI_Turn);
         bestChoice.scoreGained = 0;
         return bestChoice;
@@ -70,8 +68,9 @@ static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
         int PlateauCopy[12];
         CopyPlateau(PlateauList, PlateauCopy);
         int scoreGained = doTheMovePos(PlateauCopy, pos, AI_Turn);
+        val = getNumPionsOfPlayer(PlateauCopy, AI_Turn);
         Choice childChoice = optimalChoice(PlateauCopy, !AI_Turn, depth -1);
-        int totalScore = 1000*scoreGained + 1000*childChoice.scoreGained + childChoice.scorePlateau + val;// score total combinant la prise immédiate, le score futur et l'état du plateau
+        int totalScore = scoreGained + 2*childChoice.scoreGained + val + childChoice.scorePlateau;
         if ((AI_Turn && totalScore >= valRef) || (!AI_Turn && totalScore <= valRef)){
                 valRef = totalScore;
                 bestChoice.pos = pos;

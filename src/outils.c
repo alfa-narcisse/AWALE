@@ -126,16 +126,16 @@ void doTheMoveDisplay(
         }
         i++;
     }
-    int finalPos = (posInit + NBPions) % 12; // position finale
+    int finalPosTest = (posInit + i-1) % 12, finalPosExec = (posInit + i-1) % 12; // position finale
     int minRef = (player1Turn) ? 6: 0;
     int maxRef = (player1Turn) ? 11 : 5;
     int NewPlateau [12];
     int scoreGained =0;
     CopyPlateau(PlateauList, NewPlateau);
-    while (finalPos >= minRef && finalPos <= maxRef && (NewPlateau[finalPos] == 2 || NewPlateau[finalPos] ==3)){
-        scoreGained += NewPlateau[finalPos];
-        NewPlateau[finalPos] =0;
-        finalPos -=1;
+    while (finalPosTest >= minRef && finalPosTest <= maxRef && (NewPlateau[finalPosTest] == 2 || NewPlateau[finalPosTest] ==3)){
+        scoreGained += NewPlateau[finalPosTest];
+        NewPlateau[finalPosTest] =0;
+        finalPosTest -=1;
     }
     bool Starving = isMyOpponentStarving(NewPlateau, player1Turn);
     if (!Starving){// Si l'adversaire n'est pas affamé, on peut capturer, 
@@ -145,11 +145,10 @@ void doTheMoveDisplay(
         } else {
             *scorePlayer2 += scoreGained;
         }
-        finalPos = (posInit + NBPions) % 12;
         // Afficher la prise étape par étape
-        while (finalPos >= minRef && finalPos <= maxRef && (PlateauList [finalPos] == 2 || PlateauList[finalPos] ==3)){
-            PlateauList[finalPos] =0;
-            finalPos -=1;
+        while (finalPosExec >= minRef && finalPosExec <= maxRef && (PlateauList [finalPosExec] == 2 || PlateauList[finalPosExec] ==3)){
+            PlateauList[finalPosExec] =0;
+            finalPosExec -=1;
             //SDL_RenderClear(plateauRenderer);
             //SDL_RenderTexture(plateauRenderer, bgTexture, NULL,NULL);
             displayPlateauWithDelay(
