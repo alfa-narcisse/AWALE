@@ -70,9 +70,9 @@ static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
         int scoreGained = doTheMovePos(PlateauCopy, pos, AI_Turn);
         val = getNumPionsOfPlayer(PlateauCopy, AI_Turn);
         Choice childChoice = optimalChoice(PlateauCopy, !AI_Turn, depth -1);
-        int totalScore = scoreGained + 2*childChoice.scoreGained + val + childChoice.scorePlateau;
+        int totalScore = 3*scoreGained + 3*childChoice.scoreGained + val;
         if ((AI_Turn && totalScore >= valRef) || (!AI_Turn && totalScore <= valRef)){
-                valRef = totalScore;
+                valRef = totalScore; 
                 bestChoice.pos = pos;
                 bestChoice.scorePlateau = val;
                 bestChoice.scoreGained = scoreGained;
