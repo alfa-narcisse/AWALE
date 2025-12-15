@@ -272,9 +272,6 @@ void popUpFinalityOfGame(
     }
     else{
         victoryTexture = IMG_LoadTexture(victoryRenderer, "../assets/images/player2Win.png");
-        if (VsAI){
-            depht+=1;
-        } 
     }
 
     if (!victoryTexture){

@@ -6,7 +6,6 @@
 
 typedef struct Choice{
     int pos;
-    int scorePlateau;
     int scoreGained;
 } Choice;
 
@@ -45,13 +44,68 @@ static int doTheMovePos(int PlateauList[12], int pos, bool AI_Turn){
     return 0;
 }
 
+int evaluatePlateau(int PlateauList[12], bool AI_Turn){
+    int heuristic = 0;
+    for (int i=0; i<6;i++){
+        if (PlateauList[i]==2){
+            if (AI_Turn){
+                heuristic -= 100;
+            }
+            else{
+                heuristic += 100;
+            }
+        }
+        if (PlateauList[i]==1){
+            if (AI_Turn){
+                heuristic -= 80;
+            }
+            else{
+                heuristic += 80;
+            }
+        }
+        if (PlateauList[i]>=13){
+            if (AI_Turn){
+                heuristic += 10;
+            }
+            else{
+                heuristic -= 10;
+            }
+        }
+    }
+    for (int i=6; i<12;i++){
+        if (PlateauList[i]==2){
+            if (AI_Turn){
+                heuristic += 10;
+            }
+            else{
+                heuristic -= 10;
+            }
+        }
+        if (PlateauList[i]==1){
+            if (AI_Turn){
+                heuristic += 8;
+            }
+            else{
+                heuristic -= 8;
+            }
+        }
+        if (PlateauList[i]>=13){
+            if (AI_Turn){
+                heuristic -= 10;
+            }
+            else{
+                heuristic += 10;
+            }
+        }
+    }
+    return heuristic;
+}
 static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
     Choice bestChoice;
     bestChoice.pos = -1;
     int val = getNumPionsOfPlayer(PlateauList, AI_Turn);
     if (val==0 || depth ==0){
-        bestChoice.scorePlateau = val;
-        bestChoice.scoreGained = 0;
+        bestChoice.scoreGained = 5*val;
         return bestChoice;
     }
     int possibleMoves[6];
@@ -59,8 +113,7 @@ static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
     int valRef = (AI_Turn) ? -INFINITY : INFINITY;// valeur de référence pour la comparaison
     if (nbPos ==0){
         // Pas de coup possible, dans le cas où on ne peut plus nourir l'adversaire
-        bestChoice.scorePlateau = getNumPionsOfPlayer(PlateauList, AI_Turn);
-        bestChoice.scoreGained = 0;
+        bestChoice.scoreGained = 5*getNumPionsOfPlayer(PlateauList, AI_Turn);;
         return bestChoice;
     }
     for (int i=0;i<nbPos;i++){// pour chaque coup possible
@@ -68,13 +121,12 @@ static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
         int PlateauCopy[12];
         CopyPlateau(PlateauList, PlateauCopy);
         int scoreGained = doTheMovePos(PlateauCopy, pos, AI_Turn);
-        val = getNumPionsOfPlayer(PlateauCopy, AI_Turn);
+        val = evaluatePlateau(PlateauCopy, AI_Turn);
         Choice childChoice = optimalChoice(PlateauCopy, !AI_Turn, depth -1);
-        int totalScore = 3*scoreGained + 3*childChoice.scoreGained + val;
+        int totalScore = 100*scoreGained + 1000*childChoice.scoreGained + val ;
         if ((AI_Turn && totalScore >= valRef) || (!AI_Turn && totalScore <= valRef)){
                 valRef = totalScore; 
                 bestChoice.pos = pos;
-                bestChoice.scorePlateau = val;
                 bestChoice.scoreGained = scoreGained;
             }
         }
