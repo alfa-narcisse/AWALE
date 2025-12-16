@@ -80,7 +80,7 @@ static void popUpFinalityOfGame(SDL_Window *window,
                         int depht
                     );
 
-void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode, bool player1Turn, int depht,int scorePlayer1, int scorePlayer2){
+void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start, bool player1Turn, int depht,int scorePlayer1, int scorePlayer2){
     bool running = true;
     bool quitDirectly = false;
     bool goToMenu = false;
@@ -164,7 +164,14 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode, bool play
                 }
             
             if (VsAiMode && player1Turn){
-                int pos = bestChoiceAI(ListePions, depht);
+                int pos = -1;
+                if (start){
+                    pos = SDL_rand(6);
+                    start = false;
+                }
+                else{
+                    pos = bestChoiceAI(ListePions, depht);
+                }
                 if (pos != -1){
                     doTheMoveDisplay(bgRenderer, police,bgTexture,ListButtons,nbButtons,POS_TROUS, POS_RECT, ListePions, pos,VsAiMode, player1Turn,&scorePlayer1, &scorePlayer2);
                     finalState = ultimateState(ListePions, player1Turn);
@@ -272,6 +279,7 @@ void popUpFinalityOfGame(
     }
     else{
         victoryTexture = IMG_LoadTexture(victoryRenderer, "../assets/images/player2Win.png");
+        if (VsAI) depht++;
     }
 
     if (!victoryTexture){
@@ -370,7 +378,7 @@ void popUpFinalityOfGame(
     SDL_DestroyRenderer(victoryRenderer);
 
     if (replay){
-        launch_game(window, ListeP,VsAI, true,depht,0,0);
+        launch_game(window, ListeP,VsAI,true, true,depht,0,0);
     }
 
     else if(toMenu){
@@ -523,7 +531,7 @@ void popUpPausedGame(
     SDL_DestroyRenderer(pauseRenderer);
 
     if (replay){
-        launch_game(window, ListePions,VsAI, player1Turn,depht,scorePlayer1,scorePlayer2);
+        launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2);
     }
     else if(toMenu){
         int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
@@ -661,7 +669,7 @@ void confirmGoToMenuPopUp(
     SDL_DestroyRenderer(confirmRenderer);
 
     if (replay){
-        launch_game(window, ListePions,VsAI, player1Turn,depht,scorePlayer1,scorePlayer2);
+        launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2);
     }
     else if(toMenu){
         int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};

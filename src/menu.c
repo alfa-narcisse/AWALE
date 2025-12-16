@@ -192,7 +192,7 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
     if (wanthelp) AfficheHelp(win, ListePions);
     // à ajouter l'action à faire lorsque l'utilisateur choisit l'une des options ai ou 2 players.
     else if( VsAiMode || twoPlayersMode){
-        launch_game(win,ListePions, VsAiMode, true,2,0,0);//Pour le moment, on met profondeur à 3
+        launch_game(win,ListePions, VsAiMode,true, true,2,0,0);//Pour le moment, on met profondeur à 3
     }
 }
 void AfficheHelp(SDL_Window* win, int ListePions[12]) {
