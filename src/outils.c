@@ -4,6 +4,7 @@
 #include "display.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include "sound.h"
 
 typedef struct Button{
     SDL_FRect rect;
@@ -88,16 +89,25 @@ void doTheMoveDisplay(
     SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     SDL_Texture *bgTexture,
+
     Button*ListButtons[],
     int nbButtons,
+
     int POS_TROUS[12][2],
     int POS_RECT[12][2],
+
     int PlateauList[12], 
     int posInit,
+
     bool VsAI, 
     bool player1Turn,
+
     int* scorePlayer1, 
-    int* scorePlayer2
+    int* scorePlayer2,
+
+    
+    AudioStreamInstance* ListePionSounds[4]
+
     )
 {
     if (PlateauList == NULL || posInit <0 || posInit >=12 ||  policePlateau == NULL ||  scorePlayer1 == NULL || scorePlayer2 == NULL) return;
@@ -108,6 +118,7 @@ void doTheMoveDisplay(
     while(0<copyNbPions){
         if ((posInit + i)%12 != posInit){// éviter de déposer une pierre dans le trou de départ
             PlateauList[(posInit + i)%12] +=1;
+            
             displayPlateauWithDelay(
                 plateauRenderer,
                 bgTexture,
@@ -120,8 +131,9 @@ void doTheMoveDisplay(
                 *scorePlayer1,
                 *scorePlayer2,
                 VsAI,
-                800
+                1
             );
+            PlaySoundOfPion(ListePionSounds);
             copyNbPions--;  
         }
         i++;
@@ -145,12 +157,12 @@ void doTheMoveDisplay(
         } else {
             *scorePlayer2 += scoreGained;
         }
+        SDL_Delay(500);
         // Afficher la prise étape par étape
         while (finalPosExec >= minRef && finalPosExec <= maxRef && (PlateauList [finalPosExec] == 2 || PlateauList[finalPosExec] ==3)){
             PlateauList[finalPosExec] =0;
             finalPosExec -=1;
-            //SDL_RenderClear(plateauRenderer);
-            //SDL_RenderTexture(plateauRenderer, bgTexture, NULL,NULL);
+                
             displayPlateauWithDelay(
                 plateauRenderer,
                 bgTexture,
@@ -163,8 +175,9 @@ void doTheMoveDisplay(
                 *scorePlayer1,
                 *scorePlayer2,
                 VsAI,
-                800
+                1
             );
+            PlaySoundOfPion(ListePionSounds);
         } 
     }
 }

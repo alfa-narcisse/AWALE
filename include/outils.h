@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
-
+#include "sound.h"
 
 
 // ==== NOTION IMPORTANTE ====
@@ -63,16 +63,24 @@ void doTheMoveDisplay(
     SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     SDL_Texture *bgTexture,
-    Button*LisButtons[],
+
+    Button*ListButtons[],
     int nbButtons,
+
     int POS_TROUS[12][2],
     int POS_RECT[12][2],
+
     int PlateauList[12], 
     int posInit,
+
     bool VsAI, 
     bool player1Turn,
+
     int* scorePlayer1, 
-    int* scorePlayer2
-);
+    int* scorePlayer2,
+
+    AudioStreamInstance* ListePionSounds[4]
+
+    );
 
 #endif // OUTILS_H

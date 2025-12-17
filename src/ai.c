@@ -106,7 +106,7 @@ static Choice optimalChoice(int PlateauList[12], bool AI_Turn, int depth){
         int scoreGained = doTheMovePos(PlateauCopy, pos, AI_Turn);
         val = evaluatePlateau(PlateauCopy, AI_Turn);
         Choice childChoice = optimalChoice(PlateauCopy, !AI_Turn, depth -1);
-        int totalScore = 10*scoreGained + 10000*childChoice.scoreGained + val ;
+        int totalScore = 100*scoreGained + 100*childChoice.scoreGained + val ;
         if ((AI_Turn && totalScore >= valRef) || (!AI_Turn && totalScore <= valRef)){
                 valRef = totalScore; 
                 bestChoice.pos = pos;

@@ -7,6 +7,8 @@
 #include "ai.h"
 #include "display.h"
 #include "menu.h"
+#include "sound.h"
+
 
 
 int POS_TROUS[12][2]={{1065, 300}, {895, 300}, {725, 300}, {555, 300}, {385, 300}, {215, 300},
@@ -143,6 +145,22 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     ListButtons[0] = &btn_menuRunning;
     ListButtons[1] = &btn_pauseGame;
     int nbButtons = 2;
+
+
+     /*==============Gestion de Outils nécessaires pour le son=================== */
+    DeviceID* deviceId;
+    deviceId = InitAudioDevice();
+    if (!deviceId){
+        running = false;
+    }
+
+    AudioStreamInstance *ListSoundsPions[4];
+    ListSoundsPions[0]= LoadWAV("../assets/audio/pion_1.wav", deviceId);
+    ListSoundsPions[1]= LoadWAV("../assets/audio/pion_2.wav", deviceId);
+    ListSoundsPions[2]= LoadWAV("../assets/audio/pion_3.wav", deviceId);
+    ListSoundsPions[3]= LoadWAV("../assets/audio/pion_4.wav", deviceId);
+
+
     while(running){
         displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
         
@@ -173,7 +191,13 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                     pos = bestChoiceAI(ListePions, depht);
                 }
                 if (pos != -1){
-                    doTheMoveDisplay(bgRenderer, police,bgTexture,ListButtons,nbButtons,POS_TROUS, POS_RECT, ListePions, pos,VsAiMode, player1Turn,&scorePlayer1, &scorePlayer2);
+                    SDL_Delay(800);
+                    doTheMoveDisplay(bgRenderer, police,bgTexture,
+                                    ListButtons,nbButtons,
+                                    POS_TROUS, POS_RECT, ListePions, pos,
+                                    VsAiMode, player1Turn,
+                                    &scorePlayer1, &scorePlayer2,
+                                    ListSoundsPions);
                     finalState = ultimateState(ListePions, player1Turn);
                     player1Turn = false;
                 }
@@ -190,9 +214,15 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                     if (btn_pauseGame.isHover) btn_pauseGame.isPressed = true;
                     if (btn_menuRunning.isHover) btn_menuRunning.isPressed = true;
                     if ((!VsAiMode && player1Turn) || !player1Turn){
-                        int p = handleMouseButtonDownEvent(px,py,player1Turn, ListePions, POS_TROUS);
-                        if (p!=-1){
-                            doTheMoveDisplay(bgRenderer, police,bgTexture,ListButtons,nbButtons,POS_TROUS,POS_RECT, ListePions, p,VsAiMode, player1Turn,&scorePlayer1, &scorePlayer2);
+                        int pos = handleMouseButtonDownEvent(px,py,player1Turn, ListePions, POS_TROUS);
+                        if (pos!=-1){
+                            SDL_Delay(800);
+                            doTheMoveDisplay(bgRenderer, police,bgTexture,
+                                    ListButtons,nbButtons,
+                                    POS_TROUS, POS_RECT, ListePions, pos,
+                                    VsAiMode, player1Turn,
+                                    &scorePlayer1, &scorePlayer2,
+                                    ListSoundsPions);
                             finalState = ultimateState(ListePions, player1Turn);
                             if (finalState){
                                 running = false;
@@ -224,6 +254,10 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     freeButton(&btn_pauseGame);
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyRenderer(bgRenderer);
+    /*========nettoyage de tout ce qui est sound=======================*/
+    CleanUpSoundsPions(ListSoundsPions);
+    CleanUpDevice(deviceId);
+    /*=========== fin nettoyage de tout ce qui est sound================*/
     if (goToMenu){
         confirmGoToMenuPopUp(window, ListePions, VsAiMode, player1Turn, scorePlayer1, scorePlayer2, depht);
     }
@@ -257,6 +291,11 @@ void popUpFinalityOfGame(
     scorePlayer1 += getNumPionsOfPlayer(ListePions, true);
     scorePlayer2 -= getNumPionsOfPlayer(ListePions, false);
 
+    /*========== Sound===================*/
+    AudioStreamInstance* victoryAudioStream;
+    DeviceID * deviceId;
+    deviceId = InitAudioDevice();
+    /*============== -|- ================*/
     SDL_Renderer* victoryRenderer = SDL_CreateRenderer(window, NULL);
     if (!victoryRenderer){
         fprintf(stderr, "Erreur dans la création du renderer 3: %s", SDL_GetError());
@@ -270,16 +309,25 @@ void popUpFinalityOfGame(
     SDL_Texture* victoryTexture;
     if (scorePlayer1==scorePlayer2){
         victoryTexture = IMG_LoadTexture(victoryRenderer, "../assets/images/equality.png");
+        victoryAudioStream = LoadWAV("../assets/audio/equality.wav", deviceId);
     }
     else if(scorePlayer1>scorePlayer2 && VsAI){
         victoryTexture = IMG_LoadTexture(victoryRenderer, "../assets/images/aiWin.png");
+        victoryAudioStream = LoadWAV("../assets/audio/ai_wins.wav", deviceId);
     }
     else if(scorePlayer1>scorePlayer2 && !VsAI){
         victoryTexture = IMG_LoadTexture(victoryRenderer, "../assets/images/player1Win.png");
+        victoryAudioStream = LoadWAV("../assets/audio/player1_wins.wav", deviceId);
     }
     else{
         victoryTexture = IMG_LoadTexture(victoryRenderer, "../assets/images/player2Win.png");
-        if (VsAI) depht++;
+        if (VsAI) {
+            depht++;
+            victoryAudioStream = LoadWAV("../assets/audio/you_win.wav", deviceId);
+        }
+        else{
+            victoryAudioStream = LoadWAV("../assets/audio/player2_wins.wav", deviceId);
+        }
     }
 
     if (!victoryTexture){
@@ -322,6 +370,9 @@ void popUpFinalityOfGame(
         .y = 200
     };
     
+    /*===================== Sound management========================*/
+    PlayAudioStream(victoryAudioStream);
+    /*============================ -|- =============================*/
     while(running){
         SDL_RenderTexture(victoryRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(victoryRenderer, victoryTexture, NULL, &victoryRect);
@@ -370,13 +421,17 @@ void popUpFinalityOfGame(
                 }
             }
         }
-    int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
+   
+    /*===================Nettoyage===============*/
     freeButton(&btn_replay);
     freeButton(&btn_tomenu);
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyTexture(victoryTexture);
     SDL_DestroyRenderer(victoryRenderer);
-
+    CleanUpAudioStreamInstance(victoryAudioStream);
+    CleanUpDevice(deviceId);
+    /*==================== -|- ==================*/
+    int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
     if (replay){
         launch_game(window, ListeP,VsAI,true, true,depht,0,0);
     }
