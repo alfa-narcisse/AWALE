@@ -51,8 +51,7 @@ int GetPossibleMoves(int PlateauList[12],  int dstPossibleMoves[6],bool player1T
 // Vérifier la finalité du jeu
 bool ultimateState(int PlateauList[12], bool player1Turn);
 
-// Incrémenter le nombre de pions dans une position donnée
-void inCrementInPos(int PlateauList[12], int pos);
+bool detectLoop(int PlateauList[12]);
 
 
 // Executer un mouvement à une position donnée
@@ -82,5 +81,6 @@ void doTheMoveDisplay(
     AudioStreamInstance* ListePionSounds[4]
 
     );
+
 
 #endif // OUTILS_H

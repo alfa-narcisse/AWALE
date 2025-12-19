@@ -61,7 +61,7 @@ int GetPossibleMoves(int PlateauList[12],  int dstPossibleMoves[6],bool player1T
     bool Starving = isMyOpponentStarving(PlateauList, player1Turn);
     int nbPos = 0;
     for (int p =0; p<6;p++){
-        int ref= (Starving)? 6:p+1; // Il faut nourir l'adversaire si il est affamé
+        int ref= (Starving)? 6:p+1; // Il faut nourir l'adversaire s'il est affamé
         if (PlateauList[deb + p] >ref-p-1){
             dstPossibleMoves[nbPos] = deb + p;
             nbPos += 1;
@@ -72,18 +72,23 @@ int GetPossibleMoves(int PlateauList[12],  int dstPossibleMoves[6],bool player1T
 
 
 bool ultimateState(int PlateauList[12], bool player1Turn){
+    // Voilà le Joeur1? à fini de jouer, on se met à la place de son adv, est ce que mon opponent a faim? et que suis-je incapable de le nourir?
+    // Si les reponses à ces deux questions sont OUI, alors on est à la fin du jeu.
     int possibleMoves[6];
-    if (player1Turn)
-        return isMyOpponentStarving(PlateauList, false) ==0 && GetPossibleMoves(PlateauList, possibleMoves, true)==0 ;
-    else
-        return isMyOpponentStarving(PlateauList, true) ==0 && GetPossibleMoves(PlateauList, possibleMoves, false)==0 ;
+    return isMyOpponentStarving(PlateauList, !player1Turn) && GetPossibleMoves(PlateauList, possibleMoves, !player1Turn)==0 ;
 }
-
-void inCrementInPos(int PlateauList[12], int pos){
-        if (PlateauList == NULL || pos < 0 || pos >= 12) return;
-        PlateauList[pos] += 1;
+ 
+bool detectLoop(int PlateauList[12]){
+    int i = getNumPionsOfPlayer(PlateauList,true);
+    int cp1[6];
+    int p1 = GetPossibleMoves(PlateauList,cp1, true);
+    int j = -getNumPionsOfPlayer(PlateauList,false);
+    int cp2[6];
+    if (i==j && i==1){
+        if (cp2[0]-cp1[0] == 6) return true;
+    }
+    return false;
 }
-
 
 void doTheMoveDisplay(
     SDL_Renderer*plateauRenderer,
