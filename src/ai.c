@@ -307,7 +307,6 @@ int MCTS(int plateau[12], int scoreAI, int scoreP2) {
             backpropagate(node, result);
         }
     }
-    // meilleur coup = le plus visité
     int bestMove = -1;
     int maxWin = -1;
 
@@ -409,7 +408,7 @@ int bruteForceMethode(int plateau[12], int scoreAI, int scoreP2){
 /*
 *Seul l'algorithme MCTS et l'algo bestChoiceAI sont fonctionnel, la version brute est impossible à gérer car
 *il nécessite beaucoup de mémoire et de temps pour arriver aux feuilles de toutes les branches
-*Mais compte tenu du fait que le jeu Awalé est à informations complète, le choix de MiniMax (bestChoiceAI) avec élegage est 
+*Mais compte tenu du fait que le jeu Awalé est à informations complètes, le choix de MiniMax (bestChoiceAI) avec élegage est 
 *pertinent
 *
 */

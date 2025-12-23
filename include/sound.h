@@ -22,6 +22,7 @@ typedef struct DeviceID{
 // Quelques opérations relatives à AudioStreamInstance
 AudioStreamInstance* LoadWAV(const char *filename, DeviceID * deviceId );
 bool PlayAudioStream(AudioStreamInstance * audioStreamInstance);
+void read_sound_in_boucle(AudioStreamInstance *audioStreamInstance);
 void CleanUpAudioStreamInstance(AudioStreamInstance* audioStream);
 
 

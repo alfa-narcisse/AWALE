@@ -72,7 +72,7 @@ int GetPossibleMoves(int PlateauList[12],  int dstPossibleMoves[6],bool player1T
 
 
 bool ultimateState(int PlateauList[12], bool player1Turn){
-    // Voilà le Joeur1? à fini de jouer, on se met à la place de son adv, est ce que mon opponent a faim? et que suis-je incapable de le nourir?
+    // Voilà le Joeur1? à fini de jouer, on se met à la place de son adv, est ce que mon opponent a faim? suis-je incapable de le nourir?
     // Si les reponses à ces deux questions sont OUI, alors on est à la fin du jeu.
     int possibleMoves[6];
     return isMyOpponentStarving(PlateauList, !player1Turn) && GetPossibleMoves(PlateauList, possibleMoves, !player1Turn)==0 ;

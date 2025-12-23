@@ -153,7 +153,7 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     int nbButtons = 2;
 
 
-     /*==============Gestion de Outils nécessaires pour le son=================== */
+     /*======================= Gestion de Outils nécessaires pour le son =================== */
     DeviceID* deviceId;
     deviceId = InitAudioDevice();
     if (!deviceId){
@@ -165,13 +165,18 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     ListSoundsPions[1]= LoadWAV("../assets/audio/pion_2.wav", deviceId);
     ListSoundsPions[2]= LoadWAV("../assets/audio/pion_3.wav", deviceId);
     ListSoundsPions[3]= LoadWAV("../assets/audio/pion_4.wav", deviceId);
-    bool MtcVsMini = true;
+   
+    AudioStreamInstance*bgs_AudioStreamInstance = LoadWAV("../assets/audio/ground_sound.wav", deviceId);
+    //PlayAudioStream(bgs_AudioStreamInstance);
+    SDL_SetAudioStreamGain(bgs_AudioStreamInstance->stream,0.3);
+    
+    /*=========================================================================================*/
 
     while(running){
         displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
-        
+        read_sound_in_boucle(bgs_AudioStreamInstance);
         while ( SDL_PollEvent(&event) || initial)
-        {   
+        {   read_sound_in_boucle(bgs_AudioStreamInstance);
             renderbutton(bgRenderer, &btn_menuRunning);
             renderbutton(bgRenderer, &btn_pauseGame);
             float px,py;
@@ -207,9 +212,8 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                                     VsAiMode, player1Turn,
                                     &scorePlayer1, &scorePlayer2,
                                     ListSoundsPions);
-                    finalState = ultimateState(ListePions, player1Turn) ||detectLoop(ListePions);
+                    finalState = ultimateState(ListePions, player1Turn);
                     if (finalState){
-                    MtcVsMini = false;
                     running = false;
                     break;
                 }
@@ -231,7 +235,6 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                             ListSoundsPions);
                     finalState = ultimateState(ListePions, player1Turn)||detectLoop(ListePions);
                     if (finalState){
-                        MtcVsMini = false;
                         running = false;
                         break;
                     }
@@ -256,7 +259,6 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                                     ListSoundsPions);
                             finalState = ultimateState(ListePions, player1Turn) || detectLoop(ListePions);
                             if (finalState){
-                                MtcVsMini = false;
                                 running = false;
                                 break;
                             }
@@ -288,6 +290,7 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     SDL_DestroyRenderer(bgRenderer);
     /*========nettoyage de tout ce qui est sound=======================*/
     CleanUpSoundsPions(ListSoundsPions);
+    CleanUpAudioStreamInstance(bgs_AudioStreamInstance);
     CleanUpDevice(deviceId);
     /*=========== fin nettoyage de tout ce qui est sound================*/
     if (goToMenu){
@@ -324,11 +327,17 @@ void popUpFinalityOfGame(
     scorePlayer1 += getNumPionsOfPlayer(ListePions, true);
     scorePlayer2 -= getNumPionsOfPlayer(ListePions, false);
 
-    /*========== Sound===================*/
+    /*================================================= Sound ================================================*/
     AudioStreamInstance* victoryAudioStream;
     DeviceID * deviceId;
     deviceId = InitAudioDevice();
-    /*============== -|- ================*/
+    AudioStreamInstance* bgv_AudioStreamInstance = LoadWAV("../assets/audio/ground_victory_sound.wav", deviceId);
+    AudioStreamInstance* clap_AudioStreamInstance = LoadWAV("../assets/audio/applause_sound.wav", deviceId);
+
+    SDL_SetAudioStreamGain(bgv_AudioStreamInstance->stream, 0.1f);
+    SDL_SetAudioStreamGain(clap_AudioStreamInstance->stream, 0.7f);
+    /*=================================================== -|- ===================================================*/
+
     SDL_Renderer* victoryRenderer = SDL_CreateRenderer(window, NULL);
     if (!victoryRenderer){
         fprintf(stderr, "Erreur dans la création du renderer 3: %s", SDL_GetError());
@@ -405,8 +414,11 @@ void popUpFinalityOfGame(
     
     /*===================== Sound management========================*/
     PlayAudioStream(victoryAudioStream);
+    PlayAudioStream(clap_AudioStreamInstance);
+    PlayAudioStream(bgv_AudioStreamInstance);
     /*============================ -|- =============================*/
     while(running){
+        read_sound_in_boucle(bgv_AudioStreamInstance);
         SDL_RenderTexture(victoryRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(victoryRenderer, victoryTexture, NULL, &victoryRect);
         renderbutton(victoryRenderer, &btn_replay);
@@ -462,6 +474,8 @@ void popUpFinalityOfGame(
     SDL_DestroyTexture(victoryTexture);
     SDL_DestroyRenderer(victoryRenderer);
     CleanUpAudioStreamInstance(victoryAudioStream);
+    CleanUpAudioStreamInstance(bgv_AudioStreamInstance);
+    CleanUpAudioStreamInstance(clap_AudioStreamInstance);
     CleanUpDevice(deviceId);
     /*==================== -|- ==================*/
 
@@ -555,7 +569,6 @@ void popUpPausedGame(
         .x = 335,
         .y = 250
     };
-    
     while(running){
         SDL_RenderTexture(pauseRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(pauseRenderer, pauseTexture, NULL, &pauseRect);
@@ -703,7 +716,6 @@ void confirmGoToMenuPopUp(
         .x = 385+75,
         .y = 200
     };
-    
     while(running){
         SDL_RenderTexture(confirmRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(confirmRenderer, pauseTexture, NULL, &confirmMenu);
@@ -756,7 +768,6 @@ void confirmGoToMenuPopUp(
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyTexture(pauseTexture);
     SDL_DestroyRenderer(confirmRenderer);
-
     if (replay){
         launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2);
     }

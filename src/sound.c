@@ -61,6 +61,13 @@ bool PlayAudioStream(AudioStreamInstance * audioStreamInstance){
 }
 
 
+void read_sound_in_boucle(AudioStreamInstance *audioStreamInstance) {
+    if (SDL_GetAudioStreamQueued(audioStreamInstance->stream) < audioStreamInstance->data_length/2){
+        SDL_PutAudioStreamData(audioStreamInstance->stream, audioStreamInstance->data, audioStreamInstance->data_length);
+        SDL_FlushAudioStream(audioStreamInstance->stream);
+    }
+}
+
 DeviceID* InitAudioDevice(void){
     DeviceID* deviceId = (DeviceID*)SDL_malloc(sizeof(DeviceID));
     SDL_AudioSpec desired_spec = {
@@ -110,7 +117,7 @@ void PlaySoundOfPion(AudioStreamInstance* ListSoundsOfPion[4]){
     SDL_ResumeAudioStreamDevice(ListSoundsOfPion[choice]->stream);
     SDL_FlushAudioStream(ListSoundsOfPion[choice]->stream);
     SDL_Delay(800);
-    SDL_PauseAudioStreamDevice(ListSoundsOfPion[choice]->stream);
+    //SDL_PauseAudioStreamDevice(ListSoundsOfPion[choice]->stream);
 }
 
 
