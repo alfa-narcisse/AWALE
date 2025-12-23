@@ -4,8 +4,8 @@
 #include "display.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include "umbrella.h"
 #include "sound.h"
-
 typedef struct Button{
     SDL_FRect rect;
     SDL_Texture* normal;
@@ -61,7 +61,7 @@ int GetPossibleMoves(int PlateauList[12],  int dstPossibleMoves[6],bool player1T
     bool Starving = isMyOpponentStarving(PlateauList, player1Turn);
     int nbPos = 0;
     for (int p =0; p<6;p++){
-        int ref= (Starving)? 6:p+1; // Il faut nourir l'adversaire s'il est affamé
+        int ref= (Starving)? 6:p+1; // Il faut nourir l'adversaire si il est affamé
         if (PlateauList[deb + p] >ref-p-1){
             dstPossibleMoves[nbPos] = deb + p;
             nbPos += 1;
@@ -75,84 +75,76 @@ bool ultimateState(int PlateauList[12], bool player1Turn){
     // Voilà le Joeur1? à fini de jouer, on se met à la place de son adv, est ce que mon opponent a faim? suis-je incapable de le nourir?
     // Si les reponses à ces deux questions sont OUI, alors on est à la fin du jeu.
     int possibleMoves[6];
-    return isMyOpponentStarving(PlateauList, !player1Turn) && GetPossibleMoves(PlateauList, possibleMoves, !player1Turn)==0 ;
+    return isMyOpponentStarving(PlateauList, !player1Turn)&& GetPossibleMoves(PlateauList, possibleMoves, !player1Turn)==0 ;
 }
- 
-bool detectLoop(int PlateauList[12]){
-    int i = getNumPionsOfPlayer(PlateauList,true);
-    int cp1[6];
-    int p1 = GetPossibleMoves(PlateauList,cp1, true);
-    int j = -getNumPionsOfPlayer(PlateauList,false);
-    int cp2[6];
-    if (i==j && i==1){
-        if (cp2[0]-cp1[0] == 6) return true;
-    }
-    return false;
-}
+
 
 void doTheMoveDisplay(
     SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     SDL_Texture *bgTexture,
-
+    SDL_Texture *graineTexture,
+    SDL_Texture *handTexture,
+    SDL_Texture *handTextureLeft,
     Button*ListButtons[],
     int nbButtons,
-
     int POS_TROUS[12][2],
     int POS_RECT[12][2],
-
     int PlateauList[12], 
-    int posInit,
-
+    int posInit,   
     bool VsAI, 
     bool player1Turn,
-
     int* scorePlayer1, 
     int* scorePlayer2,
-
-    
-    AudioStreamInstance* ListePionSounds[4]
-
+    AudioStreamInstance* ListSoundsPions[4]
     )
 {
     if (PlateauList == NULL || posInit <0 || posInit >=12 ||  policePlateau == NULL ||  scorePlayer1 == NULL || scorePlayer2 == NULL) return;
     int NBPions = PlateauList[posInit];
     PlateauList[posInit] =0;
-    int i =1;
-    int copyNbPions = NBPions;
-    while(0<copyNbPions){
-        if ((posInit + i)%12 != posInit){// éviter de déposer une pierre dans le trou de départ
-            PlateauList[(posInit + i)%12] +=1;
-            
-            displayPlateauWithDelay(
-                plateauRenderer,
-                bgTexture,
-                policePlateau,
-                ListButtons,
-                nbButtons,
-                POS_TROUS,
-                POS_RECT,
-                PlateauList,
-                *scorePlayer1,
-                *scorePlayer2,
-                VsAI,
-                1
-            );
-            PlaySoundOfPion(ListePionSounds);
-            copyNbPions--;  
+    
+    
+    int pos_debut= posInit;
+    int pos_suiv;
+    for (int i=0;i<NBPions;i++){
+        pos_suiv = (posInit +i+1) ;
+        if (NBPions >=12 && pos_suiv %12 == posInit){
+            pos_suiv ++;
         }
-        i++;
+        pos_suiv = pos_suiv %12;
+        drawThehand(plateauRenderer,handTexture,handTextureLeft,bgTexture,graineTexture,POS_TROUS,policePlateau,
+                    PlateauList,pos_debut,pos_suiv, ListButtons,nbButtons, POS_RECT , VsAI , player1Turn, scorePlayer1, scorePlayer2);
+        PlateauList[pos_suiv] +=1;
+        displayPlateauWithDelay(
+            plateauRenderer,
+            bgTexture,
+            policePlateau,
+            ListButtons,
+            graineTexture,
+            nbButtons,
+            POS_TROUS,
+            POS_RECT,
+            PlateauList,
+            *scorePlayer1,
+            *scorePlayer2,
+            VsAI,
+            1
+        );
+        PlaySoundOfPion(ListSoundsPions);
+        pos_debut = pos_suiv;
     }
-    int finalPosTest = (posInit + i-1) % 12, finalPosExec = (posInit + i-1) % 12; // position finale
+
+    
+    int finalPos = (posInit + NBPions) % 12; // position finale
     int minRef = (player1Turn) ? 6: 0;
     int maxRef = (player1Turn) ? 11 : 5;
     int NewPlateau [12];
     int scoreGained =0;
     CopyPlateau(PlateauList, NewPlateau);
-    while (finalPosTest >= minRef && finalPosTest <= maxRef && (NewPlateau[finalPosTest] == 2 || NewPlateau[finalPosTest] ==3)){
-        scoreGained += NewPlateau[finalPosTest];
-        NewPlateau[finalPosTest] =0;
-        finalPosTest -=1;
+    while (finalPos >= minRef && finalPos <= maxRef && (NewPlateau[finalPos] == 2 || NewPlateau[finalPos] ==3)){
+        scoreGained += NewPlateau[finalPos];
+        NewPlateau[finalPos] =0;
+        finalPos -=1;
     }
     bool Starving = isMyOpponentStarving(NewPlateau, player1Turn);
     if (!Starving){// Si l'adversaire n'est pas affamé, on peut capturer, 
@@ -162,17 +154,38 @@ void doTheMoveDisplay(
         } else {
             *scorePlayer2 += scoreGained;
         }
-        SDL_Delay(500);
+        finalPos = (posInit + NBPions) % 12;
         // Afficher la prise étape par étape
-        while (finalPosExec >= minRef && finalPosExec <= maxRef && (PlateauList [finalPosExec] == 2 || PlateauList[finalPosExec] ==3)){
-            PlateauList[finalPosExec] =0;
-            finalPosExec -=1;
-                
+        while (finalPos >= minRef && finalPos <= maxRef && (PlateauList [finalPos] == 2 || PlateauList[finalPos] ==3)){
+            
+            //SDL_RenderClear(plateauRenderer);
+            //SDL_RenderTexture(plateauRenderer, bgTexture, NULL,NULL);
+            //drawAllThePlaterSeeds(plateauRenderer, graineTexture, POS_TROUS, PlateauList);
+            //SDL_RenderPresent(plateauRenderer);
+            //SDL_Delay(800);
+            drawTheHandToScore(
+                plateauRenderer,
+                handTexture,
+                handTextureLeft,
+                bgTexture,
+                graineTexture,
+                POS_TROUS,
+                policePlateau,
+                PlateauList,
+                POS_RECT,
+                VsAI,
+                player1Turn,
+                scorePlayer1,
+                scorePlayer2,
+                finalPos 
+            );
+            
             displayPlateauWithDelay(
                 plateauRenderer,
                 bgTexture,
                 policePlateau,
                 ListButtons,
+                graineTexture,
                 nbButtons,
                 POS_TROUS,
                 POS_RECT,
@@ -182,7 +195,9 @@ void doTheMoveDisplay(
                 VsAI,
                 1
             );
-            PlaySoundOfPion(ListePionSounds);
+            PlaySoundOfPion(ListSoundsPions);
+            PlateauList[finalPos] =0;
+            finalPos -=1;
         } 
     }
 }

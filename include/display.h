@@ -26,9 +26,10 @@ SDL_Texture* createSurfaceTexturePlateau(SDL_Renderer * renderer);
 //Afficher tout avec un délai
 void displayPlateauWithDelay(
     SDL_Renderer * rendererPlateau,
-    SDL_Texture*plateauTexture, 
+    SDL_Texture*plateauTexture,
     TTF_Font* policePlateau,
     Button*ListButtons[],
+    SDL_Texture*graineTexture, 
     int nbButtons,
     int POS_TROUS[12][2],
     int POS_RECT[12][2],

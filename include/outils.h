@@ -62,6 +62,9 @@ void doTheMoveDisplay(
     SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     SDL_Texture *bgTexture,
+    SDL_Texture *graineTexture,
+    SDL_Texture *handTexture,
+    SDL_Texture *handTextureLeft,
 
     Button*ListButtons[],
     int nbButtons,
@@ -79,7 +82,6 @@ void doTheMoveDisplay(
     int* scorePlayer2,
 
     AudioStreamInstance* ListePionSounds[4]
-
     );
 
 

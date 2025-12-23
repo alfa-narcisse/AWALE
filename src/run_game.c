@@ -8,6 +8,7 @@
 #include "display.h"
 #include "menu.h"
 #include "sound.h"
+#include "animation.h"
 
 
 
@@ -24,6 +25,7 @@ static int distanceSquared(int x1, int y1, int x2, int y2) {
     int dy = y1 - y2;
     return dx * dx + dy * dy;
 }
+
 
 int getClickedHole(int x, int y, int POS_TROUS[12][2]) {
     for (int i = 0; i < 12; i++) {
@@ -165,15 +167,24 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     ListSoundsPions[1]= LoadWAV("../assets/audio/pion_2.wav", deviceId);
     ListSoundsPions[2]= LoadWAV("../assets/audio/pion_3.wav", deviceId);
     ListSoundsPions[3]= LoadWAV("../assets/audio/pion_4.wav", deviceId);
-   
+    
     AudioStreamInstance*bgs_AudioStreamInstance = LoadWAV("../assets/audio/ground_sound.wav", deviceId);
     //PlayAudioStream(bgs_AudioStreamInstance);
     SDL_SetAudioStreamGain(bgs_AudioStreamInstance->stream,0.3);
     
     /*=========================================================================================*/
 
+    /*============================ Tout ce qui est Hand ===================================*/
+    SDL_Texture* graineTexture = IMG_LoadTexture(bgRenderer, "../assets/images/graine.png");
+    if (graineTexture == NULL) {
+    printf("Erreur: graineTexture n'a pas été chargée ou est NULL\n");
+    }
+    SDL_Texture* handTextureRight = IMG_LoadTexture(bgRenderer, "../assets/images/main.png");
+    SDL_Texture* handTextureLeft = IMG_LoadTexture(bgRenderer, "../assets/images/maingauche.png");
+    /*===========================================================================================*/
+    bool v = true;
     while(running){
-        displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
+        displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,graineTexture,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
         read_sound_in_boucle(bgs_AudioStreamInstance);
         while ( SDL_PollEvent(&event) || initial)
         {   read_sound_in_boucle(bgs_AudioStreamInstance);
@@ -202,11 +213,11 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                     pos = bestChoiceAI(ListePions, depht-2);
                     //pos = MCTS(ListePions, scorePlayer1,scorePlayer2);
                     //pos = bruteForceMethode(ListePions, scorePlayer1,scorePlayer2);
-
                 }
                 if (pos != -1){
                     SDL_Delay(1000);
-                    doTheMoveDisplay(bgRenderer, police,bgTexture,
+                    doTheMoveDisplay(bgRenderer,police,bgTexture,
+                                    graineTexture,handTextureRight,handTextureLeft, 
                                     ListButtons,nbButtons,
                                     POS_TROUS, POS_RECT, ListePions, pos,
                                     VsAiMode, player1Turn,
@@ -215,56 +226,61 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                     finalState = ultimateState(ListePions, player1Turn);
                     if (finalState){
                     running = false;
+                    v = false;
                     break;
                 }
                     player1Turn = false;
                 }    
             }
-            /*
+            
             if ((!VsAiMode && player1Turn) || !player1Turn){
                 int List2[12];
                 madeInverseList(ListePions, List2);
                 int pos = bestChoiceAI(List2,depht)+6;
                 if (pos!=-1){
                     SDL_Delay(800);
-                    doTheMoveDisplay(bgRenderer, police,bgTexture,
-                            ListButtons,nbButtons,
-                            POS_TROUS, POS_RECT, ListePions, pos,
-                            VsAiMode, player1Turn,
-                            &scorePlayer1, &scorePlayer2,
-                            ListSoundsPions);
-                    finalState = ultimateState(ListePions, player1Turn)||detectLoop(ListePions);
-                    if (finalState){
-                        running = false;
-                        break;
-                    }
-                    player1Turn = !player1Turn;
-                }
-            }*/
-            
-            switch (event.type)
-                {
-                case SDL_EVENT_MOUSE_BUTTON_DOWN :
-                    if (btn_pauseGame.isHover) btn_pauseGame.isPressed = true;
-                    if (btn_menuRunning.isHover) btn_menuRunning.isPressed = true;
-                    if ((!VsAiMode && player1Turn) || !player1Turn){
-                        int pos = handleMouseButtonDownEvent(px,py,player1Turn, ListePions, POS_TROUS);
-                        if (pos!=-1){
-                            SDL_Delay(800);
-                            doTheMoveDisplay(bgRenderer, police,bgTexture,
+                    doTheMoveDisplay(bgRenderer,police,bgTexture,
+                                    graineTexture,handTextureRight,handTextureLeft, 
                                     ListButtons,nbButtons,
                                     POS_TROUS, POS_RECT, ListePions, pos,
                                     VsAiMode, player1Turn,
                                     &scorePlayer1, &scorePlayer2,
                                     ListSoundsPions);
-                            finalState = ultimateState(ListePions, player1Turn) || detectLoop(ListePions);
+                    finalState = ultimateState(ListePions, player1Turn);
+                    if (finalState){
+                        running = false;
+                        v = false;
+                        break;
+                    }
+                    player1Turn = !player1Turn;
+                }
+            }
+            switch (event.type)
+                {
+                case SDL_EVENT_MOUSE_BUTTON_DOWN :
+                    if (btn_pauseGame.isHover) btn_pauseGame.isPressed = true;
+                    if (btn_menuRunning.isHover) btn_menuRunning.isPressed = true;
+                    /*
+                    if ((!VsAiMode && player1Turn) || !player1Turn){
+                        int pos = handleMouseButtonDownEvent(px,py,player1Turn, ListePions, POS_TROUS);
+                        if (pos!=-1){
+                            SDL_Delay(800);
+                            doTheMoveDisplay(bgRenderer,police,bgTexture,
+                                    graineTexture,handTextureRight,handTextureLeft,
+                                    ListButtons,
+                                    nbButtons,
+                                    POS_TROUS,  POS_RECT, ListePions, pos,
+                                    VsAiMode, player1Turn,
+                                    &scorePlayer1, &scorePlayer2,
+                                    ListSoundsPions);
+                            finalState = ultimateState(ListePions, player1Turn);
                             if (finalState){
                                 running = false;
                                 break;
                             }
                             player1Turn = !player1Turn;
                         }
-                    }
+                    }*/
                     break;
                 case SDL_EVENT_MOUSE_BUTTON_UP:
                     if (btn_pauseGame.isHover && btn_pauseGame.isPressed) {
@@ -303,6 +319,9 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
         popUpFinalityOfGame(window, ListePions, scorePlayer1, scorePlayer2, VsAiMode, depht, player1Turn);
     }
     else if (quitDirectly){
+        SDL_DestroyTexture(graineTexture);
+        SDL_DestroyTexture(handTextureRight);
+        SDL_DestroyTexture(handTextureLeft);
         TTF_Quit();
         SDL_DestroyWindow(window);
     }
