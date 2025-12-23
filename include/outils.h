@@ -63,7 +63,11 @@ void doTheMoveDisplay(
     SDL_Renderer*plateauRenderer,
     TTF_Font* policePlateau,
     SDL_Texture *bgTexture,
+    
     Button*LisButtons[],
+    SDL_Texture *graineTexture,
+    SDL_Texture *handTexture,
+    SDL_Texture *handTextureLeft,
     int nbButtons,
     int POS_TROUS[12][2],
     int POS_RECT[12][2],

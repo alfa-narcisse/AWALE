@@ -5,6 +5,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>
 #include "outils.h"
+#include "animation.h"
 
 
 
@@ -112,14 +113,14 @@ void displayContainsOfHoles(int ListePions[12], SDL_Renderer * renderer, TTF_Fon
                         .w = 40
                     };
 
-        SDL_FRect dstRect;
-        dstRect.w = 60; // Largeur fixe pour le texte
-        dstRect.h = 70; // Hauteur fixe pour le texte
-        dstRect.x = POS_TROUS[i][0] - dstRect.w / 2; // Centrer le texte
-        dstRect.y = POS_TROUS[i][1] - dstRect.h / 2; // Centrer le texte
+        //SDL_FRect dstRect;
+        //dstRect.w = 60; // Largeur fixe pour le texte
+        //dstRect.h = 70; // Hauteur fixe pour le texte
+        //dstRect.x = POS_TROUS[i][0] - dstRect.w / 2; // Centrer le texte
+        //dstRect.y = POS_TROUS[i][1] - dstRect.h / 2; // Centrer le texte
     
         // Dessiner la texture du nombre
-        SDL_RenderTexture(renderer, TextureText, NULL, &dstRect);
+        //SDL_RenderTexture(renderer, TextureText, NULL, &dstRect);
         SDL_RenderTexture(renderer,TextureText, NULL, &r1);
         SDL_DestroyTexture(TextureText);
     }
@@ -249,9 +250,10 @@ SDL_Texture* createSurfaceTexturePlateau(SDL_Renderer * renderer){
 
 void displayPlateauWithDelay(
     SDL_Renderer * rendererPlateau,
-    SDL_Texture*plateauTexture, 
+    SDL_Texture*plateauTexture,
     TTF_Font* policePlateau,
     Button*ListButtons[],
+    SDL_Texture*graineTexture, 
     int nbButtons,
     int POS_TROUS[12][2],
     int POS_RECT[12][2],
@@ -263,12 +265,15 @@ void displayPlateauWithDelay(
     ){
     SDL_RenderClear(rendererPlateau);
     SDL_RenderTexture(rendererPlateau, plateauTexture, NULL,NULL);
+
     for (int btn=0; btn<nbButtons; btn++){
                  renderbutton(rendererPlateau, ListButtons[btn]);
             } 
     //SDL_RenderTexture(rendererPlateau,plateauTexture,NULL,NULL);
     displayScores(rendererPlateau, policePlateau,VsAI, scorePlayer1,scorePlayer2);
+    drawAllThePlaterSeeds(rendererPlateau, graineTexture, POS_TROUS, ListePions);
     displayContainsOfHoles(ListePions, rendererPlateau, policePlateau, POS_TROUS,POS_RECT);
+    
     SDL_RenderPresent(rendererPlateau);
     SDL_Delay(delayMs); 
 }

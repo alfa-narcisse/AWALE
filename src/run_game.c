@@ -7,6 +7,7 @@
 #include "ai.h"
 #include "display.h"
 #include "menu.h"
+#include "animation.h"
 
 
 int POS_TROUS[12][2]={{1065, 300}, {895, 300}, {725, 300}, {555, 300}, {385, 300}, {215, 300},
@@ -22,6 +23,7 @@ static int distanceSquared(int x1, int y1, int x2, int y2) {
     int dy = y1 - y2;
     return dx * dx + dy * dy;
 }
+
 
 int getClickedHole(int x, int y, int POS_TROUS[12][2]) {
     for (int i = 0; i < 12; i++) {
@@ -143,9 +145,15 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode, bool play
     ListButtons[0] = &btn_menuRunning;
     ListButtons[1] = &btn_pauseGame;
     int nbButtons = 2;
+    SDL_Texture* graineTexture = IMG_LoadTexture(bgRenderer, "../assets/images/graine.png");
+    if (graineTexture == NULL) {
+    printf("Erreur: graineTexture n'a pas été chargée ou est NULL\n");
+    }
+    SDL_Texture* handTextureRight = IMG_LoadTexture(bgRenderer, "../assets/images/main.png");
+    SDL_Texture* handTextureLeft = IMG_LoadTexture(bgRenderer, "../assets/images/maingauche.png");
+    
     while(running){
-        displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
-        
+        displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,graineTexture,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
         while (SDL_PollEvent(&event) || initial)
         {   
             renderbutton(bgRenderer, &btn_menuRunning);
@@ -166,7 +174,7 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode, bool play
             if (VsAiMode && player1Turn){
                 int pos = bestChoiceAI(ListePions, depht);
                 if (pos != -1){
-                    doTheMoveDisplay(bgRenderer, police,bgTexture,ListButtons,nbButtons,POS_TROUS, POS_RECT, ListePions, pos,VsAiMode, player1Turn,&scorePlayer1, &scorePlayer2);
+                    doTheMoveDisplay(bgRenderer,police,bgTexture,ListButtons,graineTexture,handTextureRight,handTextureLeft, nbButtons, POS_TROUS, POS_RECT, ListePions, pos, VsAiMode, player1Turn, &scorePlayer1, &scorePlayer2);
                     finalState = ultimateState(ListePions, player1Turn);
                     player1Turn = false;
                 }
@@ -185,7 +193,7 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode, bool play
                     if ((!VsAiMode && player1Turn) || !player1Turn){
                         int p = handleMouseButtonDownEvent(px,py,player1Turn, ListePions, POS_TROUS);
                         if (p!=-1){
-                            doTheMoveDisplay(bgRenderer, police,bgTexture,ListButtons,nbButtons,POS_TROUS,POS_RECT, ListePions, p,VsAiMode, player1Turn,&scorePlayer1, &scorePlayer2);
+                            doTheMoveDisplay(bgRenderer,police,bgTexture,ListButtons,graineTexture,handTextureRight,handTextureLeft, nbButtons, POS_TROUS, POS_RECT, ListePions, p, VsAiMode, player1Turn, &scorePlayer1, &scorePlayer2);
                             finalState = ultimateState(ListePions, player1Turn);
                             if (finalState){
                                 running = false;
@@ -227,6 +235,9 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode, bool play
         popUpFinalityOfGame(window, ListePions, scorePlayer1, scorePlayer2, VsAiMode, depht);
     }
     else if (quitDirectly){
+        SDL_DestroyTexture(graineTexture);
+        SDL_DestroyTexture(handTextureRight);
+        SDL_DestroyTexture(handTextureLeft);
         TTF_Quit();
         SDL_DestroyWindow(window);
     }
