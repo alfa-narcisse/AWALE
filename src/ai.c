@@ -24,7 +24,7 @@ static int doTheMovePos(int PlateauList[12], int pos, bool AI_Turn){
         }
         i++;
     }
-    int finalPos = (pos + i-1) % 12; // position finale à corriger car dans le cas où on ne met pas dans la positio de départ, c'est faux.
+    int finalPos = (pos + i-1) % 12; 
     int minRef = (AI_Turn) ? 6: 0;
     int maxRef = (AI_Turn) ? 11 : 5;
     int scoreGained =0;

@@ -67,7 +67,8 @@ void confirmGoToMenuPopUp(
                       bool player1Turn,
                       int scorePlayer1,
                       int scorePlayer2,
-                      int depht
+                      int depht,
+                       AudioStreamInstance* bg_AudioStreamInstance
                         );
 
 
@@ -77,7 +78,8 @@ void popUpPausedGame(SDL_Window *window,
                       bool player1Turn,
                       int scorePlayer1,
                       int scorePlayer2,
-                      int depht
+                      int depht,
+                      AudioStreamInstance* bg_AudioStreamInstance
                     );
 
 
@@ -87,10 +89,12 @@ static void popUpFinalityOfGame(SDL_Window *window,
                         int scorePlayer2,
                         bool VsAI,
                         int depht,
-                        bool player1Turn
+                        bool player1Turn,
+                        AudioStreamInstance* bg_AudioStreamInstance
                     );
 
-void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start, bool player1Turn, int depht,int scorePlayer1, int scorePlayer2){
+void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start, bool player1Turn, int depht,int scorePlayer1, int scorePlayer2, 
+AudioStreamInstance* bg_audioStreamInstance){
     bool running = true;
     bool quitDirectly = false;
     bool goToMenu = false;
@@ -156,21 +160,16 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
 
 
      /*======================= Gestion de Outils nécessaires pour le son =================== */
-    DeviceID* deviceId;
-    deviceId = InitAudioDevice();
-    if (!deviceId){
-        running = false;
-    }
-
+    DeviceID* deviceId = InitAudioDevice();
     AudioStreamInstance *ListSoundsPions[4];
     ListSoundsPions[0]= LoadWAV("../assets/audio/pion_1.wav", deviceId);
     ListSoundsPions[1]= LoadWAV("../assets/audio/pion_2.wav", deviceId);
     ListSoundsPions[2]= LoadWAV("../assets/audio/pion_3.wav", deviceId);
     ListSoundsPions[3]= LoadWAV("../assets/audio/pion_4.wav", deviceId);
+   
     
-    AudioStreamInstance*bgs_AudioStreamInstance = LoadWAV("../assets/audio/ground_sound.wav", deviceId);
     //PlayAudioStream(bgs_AudioStreamInstance);
-    SDL_SetAudioStreamGain(bgs_AudioStreamInstance->stream,0.3);
+    
     
     /*=========================================================================================*/
 
@@ -182,12 +181,11 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     SDL_Texture* handTextureRight = IMG_LoadTexture(bgRenderer, "../assets/images/main.png");
     SDL_Texture* handTextureLeft = IMG_LoadTexture(bgRenderer, "../assets/images/maingauche.png");
     /*===========================================================================================*/
-    bool v = true;
     while(running){
         displayPlateauWithDelay(bgRenderer,bgTexture,police,ListButtons,graineTexture,nbButtons,POS_TROUS,POS_RECT, ListePions,scorePlayer1,scorePlayer2,VsAiMode,1);
-        read_sound_in_boucle(bgs_AudioStreamInstance);
+        read_sound_in_boucle(bg_audioStreamInstance);
         while ( SDL_PollEvent(&event) || initial)
-        {   read_sound_in_boucle(bgs_AudioStreamInstance);
+        {   read_sound_in_boucle(bg_audioStreamInstance);
             renderbutton(bgRenderer, &btn_menuRunning);
             renderbutton(bgRenderer, &btn_pauseGame);
             float px,py;
@@ -226,14 +224,13 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                     finalState = ultimateState(ListePions, player1Turn);
                     if (finalState){
                     running = false;
-                    v = false;
                     break;
                 }
                     player1Turn = false;
                 }    
             }
             
-            if ((!VsAiMode && player1Turn) || !player1Turn){
+            /*if ((!VsAiMode && player1Turn) || !player1Turn){
                 int List2[12];
                 madeInverseList(ListePions, List2);
                 int pos = bestChoiceAI(List2,depht)+6;
@@ -254,13 +251,12 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                     }
                     player1Turn = !player1Turn;
                 }
-            }
+            } */
             switch (event.type)
                 {
                 case SDL_EVENT_MOUSE_BUTTON_DOWN :
                     if (btn_pauseGame.isHover) btn_pauseGame.isPressed = true;
                     if (btn_menuRunning.isHover) btn_menuRunning.isPressed = true;
-                    /*
                     if ((!VsAiMode && player1Turn) || !player1Turn){
                         int pos = handleMouseButtonDownEvent(px,py,player1Turn, ListePions, POS_TROUS);
                         if (pos!=-1){
@@ -280,7 +276,7 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
                             }
                             player1Turn = !player1Turn;
                         }
-                    }*/
+                    }
                     break;
                 case SDL_EVENT_MOUSE_BUTTON_UP:
                     if (btn_pauseGame.isHover && btn_pauseGame.isPressed) {
@@ -306,19 +302,22 @@ void launch_game(SDL_Window *window, int ListePions[12],bool VsAiMode,bool start
     SDL_DestroyRenderer(bgRenderer);
     /*========nettoyage de tout ce qui est sound=======================*/
     CleanUpSoundsPions(ListSoundsPions);
-    CleanUpAudioStreamInstance(bgs_AudioStreamInstance);
-    CleanUpDevice(deviceId);
     /*=========== fin nettoyage de tout ce qui est sound================*/
     if (goToMenu){
-        confirmGoToMenuPopUp(window, ListePions, VsAiMode, player1Turn, scorePlayer1, scorePlayer2, depht);
+        confirmGoToMenuPopUp(window, ListePions, VsAiMode, player1Turn, scorePlayer1, scorePlayer2, depht,bg_audioStreamInstance);
+        SDL_free(deviceId);
     }
     else if(pauseGame){
-        popUpPausedGame(window, ListePions, VsAiMode, player1Turn, scorePlayer1,scorePlayer2,depht);
+        popUpPausedGame(window, ListePions, VsAiMode, player1Turn, scorePlayer1,scorePlayer2,depht,bg_audioStreamInstance);
+        SDL_free(deviceId);
     }
     else if (finalState){
-        popUpFinalityOfGame(window, ListePions, scorePlayer1, scorePlayer2, VsAiMode, depht, player1Turn);
+        popUpFinalityOfGame(window, ListePions, scorePlayer1, scorePlayer2, VsAiMode, depht, player1Turn,bg_audioStreamInstance);
+        SDL_free(deviceId);
     }
     else if (quitDirectly){
+        CleanUpAudioStreamInstance(bg_audioStreamInstance);
+        CleanUpDevice(deviceId);
         SDL_DestroyTexture(graineTexture);
         SDL_DestroyTexture(handTextureRight);
         SDL_DestroyTexture(handTextureLeft);
@@ -335,7 +334,8 @@ void popUpFinalityOfGame(
     int scorePlayer2,
     bool VsAI,
     int depht,
-    bool player1Turn
+    bool player1Turn,
+    AudioStreamInstance* bg_AudioStreamInstance
 )
 {
     bool quitDirectly = false;
@@ -348,12 +348,8 @@ void popUpFinalityOfGame(
 
     /*================================================= Sound ================================================*/
     AudioStreamInstance* victoryAudioStream;
-    DeviceID * deviceId;
-    deviceId = InitAudioDevice();
-    AudioStreamInstance* bgv_AudioStreamInstance = LoadWAV("../assets/audio/ground_victory_sound.wav", deviceId);
+    DeviceID * deviceId = InitAudioDevice();
     AudioStreamInstance* clap_AudioStreamInstance = LoadWAV("../assets/audio/applause_sound.wav", deviceId);
-
-    SDL_SetAudioStreamGain(bgv_AudioStreamInstance->stream, 0.1f);
     SDL_SetAudioStreamGain(clap_AudioStreamInstance->stream, 0.7f);
     /*=================================================== -|- ===================================================*/
 
@@ -434,16 +430,16 @@ void popUpFinalityOfGame(
     /*===================== Sound management========================*/
     PlayAudioStream(victoryAudioStream);
     PlayAudioStream(clap_AudioStreamInstance);
-    PlayAudioStream(bgv_AudioStreamInstance);
     /*============================ -|- =============================*/
     while(running){
-        read_sound_in_boucle(bgv_AudioStreamInstance);
+        read_sound_in_boucle(bg_AudioStreamInstance);
         SDL_RenderTexture(victoryRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(victoryRenderer, victoryTexture, NULL, &victoryRect);
         renderbutton(victoryRenderer, &btn_replay);
         renderbutton(victoryRenderer, &btn_tomenu);
         SDL_RenderPresent(victoryRenderer);
         while(SDL_PollEvent(&event)){
+            read_sound_in_boucle(bg_AudioStreamInstance);
             float px,py;
             SDL_GetMouseState(&px,&py);
             // La souris touche-t-elle le bouton pour pauser le jeu?
@@ -493,20 +489,22 @@ void popUpFinalityOfGame(
     SDL_DestroyTexture(victoryTexture);
     SDL_DestroyRenderer(victoryRenderer);
     CleanUpAudioStreamInstance(victoryAudioStream);
-    CleanUpAudioStreamInstance(bgv_AudioStreamInstance);
-    CleanUpAudioStreamInstance(clap_AudioStreamInstance);
-    CleanUpDevice(deviceId);
+
     /*==================== -|- ==================*/
 
     int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
     if (replay){
-        launch_game(window, ListeP,VsAI,true, !player1Turn,depht,0,0);
+        launch_game(window, ListeP,VsAI,true, !player1Turn,depht,0,0, bg_AudioStreamInstance);
+        SDL_free(deviceId);
     }
 
     else if(toMenu){
-        AfficheMenu(window, ListeP);
+        AfficheMenu(window, ListeP, bg_AudioStreamInstance);
+        SDL_free(deviceId);
     }
     else if (quitDirectly){
+        CleanUpAudioStreamInstance(bg_AudioStreamInstance);
+        CleanUpDevice(deviceId);
         TTF_Quit();
         SDL_DestroyRenderer(victoryRenderer);
         SDL_DestroyWindow(window);
@@ -521,7 +519,9 @@ void popUpPausedGame(
     bool player1Turn,
     int scorePlayer1,
     int scorePlayer2,
-    int depht
+    int depht,
+    AudioStreamInstance* bg_AudioStreamInstance
+    
 ){
 
     bool quitDirectly = false;
@@ -589,6 +589,7 @@ void popUpPausedGame(
         .y = 250
     };
     while(running){
+        read_sound_in_boucle(bg_AudioStreamInstance);
         SDL_RenderTexture(pauseRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(pauseRenderer, pauseTexture, NULL, &pauseRect);
         renderbutton(pauseRenderer, &btn_EndGame);
@@ -596,6 +597,7 @@ void popUpPausedGame(
         renderbutton(pauseRenderer, &btn_tomenu);
         SDL_RenderPresent(pauseRenderer);
         while(SDL_PollEvent(&event)){
+            read_sound_in_boucle(bg_AudioStreamInstance);
             float px,py;
             SDL_GetMouseState(&px,&py);
             // La souris touche-t-elle le bouton pour pauser le jeu?
@@ -652,16 +654,20 @@ void popUpPausedGame(
     SDL_DestroyRenderer(pauseRenderer);
 
     if (replay){
-        launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2);
+        launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2,bg_AudioStreamInstance);
     }
     else if(toMenu){
         int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
-        AfficheMenu(window, ListeP);
+        AfficheMenu(window, ListeP, bg_AudioStreamInstance);
+
     }
     else if (endGame){
-        popUpFinalityOfGame(window,ListePions,scorePlayer1,scorePlayer2,VsAI,depht, player1Turn);
+        popUpFinalityOfGame(window,ListePions,scorePlayer1,scorePlayer2,VsAI,depht, player1Turn, bg_AudioStreamInstance);
     }
     else if (quitDirectly){
+        SDL_AudioDeviceID id = SDL_GetAudioStreamDevice(bg_AudioStreamInstance->stream);
+        CleanUpAudioStreamInstance(bg_AudioStreamInstance);
+        SDL_CloseAudioDevice(id);
         TTF_Quit();
         SDL_DestroyRenderer(pauseRenderer);
         SDL_DestroyWindow(window);
@@ -677,8 +683,8 @@ void confirmGoToMenuPopUp(
                 bool player1Turn,
                 int scorePlayer1,
                 int scorePlayer2,
-                int depht
-
+                int depht,
+                AudioStreamInstance*bg_AudioStreamInstance
 ){
     
     bool quitDirectly = false;
@@ -713,7 +719,6 @@ void confirmGoToMenuPopUp(
         .h = 70
     };
 
-
     Button btn_tomenu;
     btn_tomenu.isHover = false;
     btn_tomenu.isPressed = false;
@@ -727,8 +732,6 @@ void confirmGoToMenuPopUp(
         .h = 70
     };
 
-
-
     SDL_FRect confirmMenu = {
         .h = 360,
         .w = 360,
@@ -736,12 +739,14 @@ void confirmGoToMenuPopUp(
         .y = 200
     };
     while(running){
+        read_sound_in_boucle(bg_AudioStreamInstance);
         SDL_RenderTexture(confirmRenderer,bgTexture,NULL,NULL);
         SDL_RenderTexture(confirmRenderer, pauseTexture, NULL, &confirmMenu);
         renderbutton(confirmRenderer, &btn_replay);
         renderbutton(confirmRenderer, &btn_tomenu);
         SDL_RenderPresent(confirmRenderer);
         while(SDL_PollEvent(&event)){
+            read_sound_in_boucle(bg_AudioStreamInstance);
             float px,py;
             SDL_GetMouseState(&px,&py);
             // La souris touche-t-elle le bouton pour pauser le jeu?
@@ -788,13 +793,16 @@ void confirmGoToMenuPopUp(
     SDL_DestroyTexture(pauseTexture);
     SDL_DestroyRenderer(confirmRenderer);
     if (replay){
-        launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2);
+        launch_game(window, ListePions,VsAI,false, player1Turn,depht,scorePlayer1,scorePlayer2, bg_AudioStreamInstance);
     }
     else if(toMenu){
         int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
-        AfficheMenu(window, ListeP);
+        AfficheMenu(window, ListeP, bg_AudioStreamInstance);
     }
     else if (quitDirectly){
+        SDL_AudioDeviceID id = SDL_GetAudioStreamDevice(bg_AudioStreamInstance->stream);
+        CleanUpAudioStreamInstance(bg_AudioStreamInstance);
+        SDL_CloseAudioDevice(id);
         TTF_Quit();
         SDL_DestroyWindow(window);
     }

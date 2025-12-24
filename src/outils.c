@@ -102,40 +102,25 @@ void doTheMoveDisplay(
     if (PlateauList == NULL || posInit <0 || posInit >=12 ||  policePlateau == NULL ||  scorePlayer1 == NULL || scorePlayer2 == NULL) return;
     int NBPions = PlateauList[posInit];
     PlateauList[posInit] =0;
-    
-    
     int pos_debut= posInit;
     int pos_suiv;
-    for (int i=0;i<NBPions;i++){
-        pos_suiv = (posInit +i+1) ;
-        if (NBPions >=12 && pos_suiv %12 == posInit){
-            pos_suiv ++;
-        }
-        pos_suiv = pos_suiv %12;
+
+    int i = 0;
+    while(0 < NBPions){
+        pos_suiv = (posInit+i)%12;
+        if (pos_suiv != posInit){
         drawThehand(plateauRenderer,handTexture,handTextureLeft,bgTexture,graineTexture,POS_TROUS,policePlateau,
                     PlateauList,pos_debut,pos_suiv, ListButtons,nbButtons, POS_RECT , VsAI , player1Turn, scorePlayer1, scorePlayer2);
         PlateauList[pos_suiv] +=1;
-        displayPlateauWithDelay(
-            plateauRenderer,
-            bgTexture,
-            policePlateau,
-            ListButtons,
-            graineTexture,
-            nbButtons,
-            POS_TROUS,
-            POS_RECT,
-            PlateauList,
-            *scorePlayer1,
-            *scorePlayer2,
-            VsAI,
-            1
-        );
         PlaySoundOfPion(ListSoundsPions);
+        NBPions--;
         pos_debut = pos_suiv;
+        }
+    i++;
     }
 
     
-    int finalPos = (posInit + NBPions) % 12; // position finale
+    int finalPos = pos_suiv; // position finale
     int minRef = (player1Turn) ? 6: 0;
     int maxRef = (player1Turn) ? 11 : 5;
     int NewPlateau [12];
@@ -154,15 +139,10 @@ void doTheMoveDisplay(
         } else {
             *scorePlayer2 += scoreGained;
         }
-        finalPos = (posInit + NBPions) % 12;
+        finalPos = pos_suiv;
         // Afficher la prise étape par étape
         while (finalPos >= minRef && finalPos <= maxRef && (PlateauList [finalPos] == 2 || PlateauList[finalPos] ==3)){
-            
-            //SDL_RenderClear(plateauRenderer);
-            //SDL_RenderTexture(plateauRenderer, bgTexture, NULL,NULL);
-            //drawAllThePlaterSeeds(plateauRenderer, graineTexture, POS_TROUS, PlateauList);
-            //SDL_RenderPresent(plateauRenderer);
-            //SDL_Delay(800);
+            PlateauList[finalPos] =0;
             drawTheHandToScore(
                 plateauRenderer,
                 handTexture,
@@ -179,24 +159,7 @@ void doTheMoveDisplay(
                 scorePlayer2,
                 finalPos 
             );
-            
-            displayPlateauWithDelay(
-                plateauRenderer,
-                bgTexture,
-                policePlateau,
-                ListButtons,
-                graineTexture,
-                nbButtons,
-                POS_TROUS,
-                POS_RECT,
-                PlateauList,
-                *scorePlayer1,
-                *scorePlayer2,
-                VsAI,
-                1
-            );
             PlaySoundOfPion(ListSoundsPions);
-            PlateauList[finalPos] =0;
             finalPos -=1;
         } 
     }

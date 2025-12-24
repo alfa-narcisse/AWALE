@@ -10,9 +10,6 @@
 void drawThehand(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,SDL_Texture *handTextureLeft,SDL_Texture *bgTexture,SDL_Texture *graineTexture,int POS_TROUS[12][2],TTF_Font* policePlateau,
     int PlateauList[12],int pos_debut,int pos_suiv,Button*ListButtons[],int nbButtons,int POS_RECT[12][2],bool VsAI,bool player1Turn,int *scorePlayer1,int *scorePlayer2){
 
-
-
-
     int POS_RECT_HAND[12][2]={{985,220},{815,220},{645,220},{475,220},{305,220},{135,220},
                         {135,440},{305,440},{475,440},{645,440},{815,440},{985,440}};
 
@@ -23,7 +20,6 @@ void drawThehand(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,SDL_Text
     float duree=300; // durée de l'animation en millisecondes
     float tempdebut=SDL_GetTicks();
     
-
     while(1){
         
         float temps_ecoule=SDL_GetTicks() - tempdebut;
@@ -58,26 +54,16 @@ void drawThehand(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,SDL_Text
         }
         SDL_RenderPresent(PlateauRenderer);
         if (t>=1.0f) break;
-        
-        
-
         SDL_Delay(10); 
-        
-
-
-
-    }
-
-
-    
+    } 
 }
 
 
 void drawTheHandToScore(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,SDL_Texture *handTextureLeft,SDL_Texture *bgTexture,SDL_Texture *graineTexture,int POS_TROUS[12][2],TTF_Font* policePlateau,
     int PlateauList[12],int POS_RECT[12][2],bool VsAI,bool player1Turn,int *scorePlayer1,int *scorePlayer2,int pos ){
 
-        int POS_RECT_SCORE[2][2]={{35,500},{1185,500}};
-        int POS_RECT_HAND[12][2]={{985,220},{815,220},{645,220},{475,220},{305,220},{135,220},
+    int POS_RECT_SCORE[2][2]={{30,490},{1185,500}};
+    int POS_RECT_HAND[12][2]={{985,220},{815,220},{645,220},{475,220},{305,220},{135,220},
                         {135,440},{305,440},{475,440},{645,440},{815,440},{985,440}};
     int x=POS_RECT_HAND[pos][0];
     int y=POS_RECT_HAND[pos][1];
@@ -90,15 +76,13 @@ void drawTheHandToScore(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,S
         float temps_ecoule=SDL_GetTicks()-tempdebut;
         float t= (float)temps_ecoule/duree;
         if (t>1.0f) t=1.0f;
+        
         SDL_RenderClear(PlateauRenderer);
         SDL_RenderTexture(PlateauRenderer,bgTexture,NULL,NULL);
         displayScores(PlateauRenderer, policePlateau,VsAI, *scorePlayer1, *scorePlayer2);  
         displayContainsOfHoles(PlateauList, PlateauRenderer, policePlateau, POS_TROUS,POS_RECT);
-               
-        
         drawAllThePlaterSeeds(PlateauRenderer,graineTexture,POS_TROUS,PlateauList);
         
-        //SDL_RenderPresent(PlateauRenderer);
         float x_t= x + t*(xa - x);
         float y_t= y + t*(ya - y);
         SDL_FRect destRect={
@@ -106,8 +90,8 @@ void drawTheHandToScore(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,S
             y_t,
             160,
             160
-
         };
+
         if (player1Turn){
             SDL_RenderTexture(PlateauRenderer,handTextureLeft,NULL,&destRect);
         } else {
@@ -117,11 +101,7 @@ void drawTheHandToScore(SDL_Renderer *PlateauRenderer,SDL_Texture *handTexture,S
         SDL_RenderPresent(PlateauRenderer);
         if (t>=1.0f) break;
         
-        
-
         SDL_Delay(10);        
-
-
     }
 
 }

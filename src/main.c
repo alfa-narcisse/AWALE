@@ -12,12 +12,18 @@ int main(int argc, char* argv[]){
     if (!win){
         fprintf(stderr, "Erreur: %s", SDL_GetError());
     }
-
+   
+    DeviceID* deviceId = InitAudioDevice();
+    AudioStreamInstance* bg_audioStreamInstance = LoadWAV("../assets/audio/ground_sound.wav", deviceId);
+    SDL_SetAudioStreamGain(bg_audioStreamInstance->stream, 0.04f);
+    
     int ListePions[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
+    AfficheMenu(win, ListePions,bg_audioStreamInstance);
 
-    AfficheMenu(win, ListePions);
+
+    CleanUpAudioStreamInstance(bg_audioStreamInstance);
+    CleanUpDevice(deviceId);
     SDL_DestroyWindow(win);
     SDL_Quit();
-    
     return 0;
 }

@@ -6,6 +6,7 @@
 #include <SDL3_image/SDL_image.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "sound.h"
 #define b_widht 70
 #define b_height 70
 #define Menu_widht 1280
@@ -18,7 +19,7 @@
 
 
 
-void AfficheHelp(SDL_Window *win, int ListePions[12]);
+void AfficheHelp(SDL_Window *win, int ListePions[12], AudioStreamInstance* bg_audioStreamInstance);
 
 
 // type des boutons
@@ -38,7 +39,7 @@ void popUpRetakeGame(
                     );// dans le cas où on trouve une solution pour enregistrer l'état du jeu et pour pouvoir reprendre à la prochaine fois.
                     // Cela éxige la création d'un boutton Reprendre
 
-void AfficheMenu( SDL_Window *win, int ListePions[12]) {
+void AfficheMenu( SDL_Window *win, int ListePions[12], AudioStreamInstance* bg_audioStreamInstance) {
     SDL_Event MenuEvent = {};
     SDL_Renderer *MenuRenderer =SDL_CreateRenderer(win,NULL);
     // Creation de la texture de l'arriere plan
@@ -50,6 +51,7 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
 
     bool isopen=true;
     bool wanthelp=false;
+    bool quitDirectly = false;
     bool VsAiMode = false;
     bool twoPlayersMode = false;
 
@@ -99,9 +101,9 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
 
 
     while (isopen)
-    {
+    { 
         while (SDL_PollEvent(&MenuEvent))// ← IMPORTANT !
-        {
+        { 
             float px,py;
             SDL_GetMouseState(&px,&py);
             btn_Help.isHover=pointDansRect(px,py,btn_Help.rect);
@@ -111,6 +113,7 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
             switch (MenuEvent.type)
             {
                 case SDL_EVENT_QUIT:
+                    quitDirectly = true;
                     isopen = false;
                     break;
 
@@ -141,6 +144,7 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
                     if (btn_Exit.isHover && btn_Exit.isPressed) {
 
                         isopen = false;
+                        quitDirectly = true;
                         btn_Exit.isPressed = false;
                         break;
                     }
@@ -172,6 +176,7 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
         renderbutton(MenuRenderer,&btn_ModeVSJ);
 
         SDL_RenderPresent(MenuRenderer);
+        read_sound_in_boucle(bg_audioStreamInstance);
     }
 
     //nettoyage
@@ -189,13 +194,23 @@ void AfficheMenu( SDL_Window *win, int ListePions[12]) {
     SDL_DestroyTexture(btn_ModeVSJ.normal);
     SDL_DestroyTexture(background);
     SDL_DestroyRenderer(MenuRenderer);
-    if (wanthelp) AfficheHelp(win, ListePions);
+    if (wanthelp) AfficheHelp(win, ListePions, bg_audioStreamInstance);
     // à ajouter l'action à faire lorsque l'utilisateur choisit l'une des options ai ou 2 players.
     else if( VsAiMode || twoPlayersMode){
-        launch_game(win,ListePions, VsAiMode,true, true,15,0,0);//Pour le moment, on met profondeur à 6
+        launch_game(win,ListePions, VsAiMode,true, true,15,0,0, bg_audioStreamInstance);
+        //Pour le moment, on met profondeur à 6
     }
+    else if (quitDirectly){
+        SDL_AudioDeviceID id = SDL_GetAudioStreamDevice(bg_audioStreamInstance->stream);
+        CleanUpAudioStreamInstance(bg_audioStreamInstance);
+        SDL_CloseAudioDevice(id);
+        SDL_DestroyWindow(win);
+        TTF_Quit();
+        SDL_Quit();
+    } 
 }
-void AfficheHelp(SDL_Window* win, int ListePions[12]) {
+
+void AfficheHelp(SDL_Window* win, int ListePions[12], AudioStreamInstance* bg_audioStreamInstance) {
     SDL_Event Helpevent;
     SDL_Renderer *helprenderer=SDL_CreateRenderer(win,NULL);
     SDL_Texture *backgroundHelp = IMG_LoadTexture(helprenderer,"../assets/images/backgroundhelp.png");
@@ -217,7 +232,9 @@ void AfficheHelp(SDL_Window* win, int ListePions[12]) {
     bool ishelpOpen=true;
     bool quitdirect=false;
     while (ishelpOpen) {
+        read_sound_in_boucle(bg_audioStreamInstance);
         while (SDL_PollEvent(&Helpevent)) {
+            read_sound_in_boucle(bg_audioStreamInstance);
             float px,py;
             SDL_GetMouseState(&px,&py);
             btn_Exithelp.isHover=pointDansRect(px,py,btn_Exithelp.rect);
@@ -261,11 +278,14 @@ void AfficheHelp(SDL_Window* win, int ListePions[12]) {
     SDL_DestroyTexture(backgroundHelp);
     SDL_DestroyRenderer(helprenderer);
     if (quitdirect) {
+        SDL_AudioDeviceID id = SDL_GetAudioStreamDevice(bg_audioStreamInstance->stream);
+        CleanUpAudioStreamInstance(bg_audioStreamInstance);
+        SDL_CloseAudioDevice(id);
         SDL_DestroyWindow(win);
         SDL_Quit();
     }
     else {
-        AfficheMenu(win, ListePions);
+        AfficheMenu(win, ListePions, bg_audioStreamInstance);
     }
 
 
