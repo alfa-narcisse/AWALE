@@ -302,18 +302,16 @@ AudioStreamInstance* bg_audioStreamInstance){
     SDL_DestroyRenderer(bgRenderer);
     /*========nettoyage de tout ce qui est sound=======================*/
     CleanUpSoundsPions(ListSoundsPions);
+    CleanUpDevice(deviceId);
     /*=========== fin nettoyage de tout ce qui est sound================*/
     if (goToMenu){
         confirmGoToMenuPopUp(window, ListePions, VsAiMode, player1Turn, scorePlayer1, scorePlayer2, depht,bg_audioStreamInstance);
-        SDL_free(deviceId);
     }
     else if(pauseGame){
         popUpPausedGame(window, ListePions, VsAiMode, player1Turn, scorePlayer1,scorePlayer2,depht,bg_audioStreamInstance);
-        SDL_free(deviceId);
     }
     else if (finalState){
         popUpFinalityOfGame(window, ListePions, scorePlayer1, scorePlayer2, VsAiMode, depht, player1Turn,bg_audioStreamInstance);
-        SDL_free(deviceId);
     }
     else if (quitDirectly){
         CleanUpAudioStreamInstance(bg_audioStreamInstance);
@@ -489,28 +487,23 @@ void popUpFinalityOfGame(
     SDL_DestroyTexture(victoryTexture);
     SDL_DestroyRenderer(victoryRenderer);
     CleanUpAudioStreamInstance(victoryAudioStream);
-
+    CleanUpDevice(deviceId);
     /*==================== -|- ==================*/
 
     int ListeP[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
     if (replay){
         launch_game(window, ListeP,VsAI,true, !player1Turn,depht,0,0, bg_AudioStreamInstance);
-        SDL_free(deviceId);
     }
-
     else if(toMenu){
         AfficheMenu(window, ListeP, bg_AudioStreamInstance);
-        SDL_free(deviceId);
     }
     else if (quitDirectly){
         CleanUpAudioStreamInstance(bg_AudioStreamInstance);
-        CleanUpDevice(deviceId);
         TTF_Quit();
         SDL_DestroyRenderer(victoryRenderer);
         SDL_DestroyWindow(window);
     }    
 }
-
 
 void popUpPausedGame(
     SDL_Window *window,

@@ -20,7 +20,6 @@ int main(int argc, char* argv[]){
     int ListePions[12] = {4,4,4,4,4,4,4,4,4,4,4,4};
     AfficheMenu(win, ListePions,bg_audioStreamInstance);
 
-
     CleanUpAudioStreamInstance(bg_audioStreamInstance);
     CleanUpDevice(deviceId);
     SDL_DestroyWindow(win);
