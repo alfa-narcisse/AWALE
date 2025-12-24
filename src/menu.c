@@ -22,23 +22,6 @@
 void AfficheHelp(SDL_Window *win, int ListePions[12], AudioStreamInstance* bg_audioStreamInstance);
 
 
-// type des boutons
-
-
-
-// fonction pour verifier si on est dans un rectangle ou pas
-
-// Creation de la fontion affiche help
-
-void popUpRetakeGame(
-                    SDL_Window *window,
-                    int ListePions[12],
-                    bool *twoPlayersMode,
-                    bool *VsAI,
-                    bool player1Turn
-                    );// dans le cas où on trouve une solution pour enregistrer l'état du jeu et pour pouvoir reprendre à la prochaine fois.
-                    // Cela éxige la création d'un boutton Reprendre
-
 void AfficheMenu( SDL_Window *win, int ListePions[12], AudioStreamInstance* bg_audioStreamInstance) {
     SDL_Event MenuEvent = {};
     SDL_Renderer *MenuRenderer =SDL_CreateRenderer(win,NULL);

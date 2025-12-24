@@ -113,140 +113,10 @@ void displayContainsOfHoles(int ListePions[12], SDL_Renderer * renderer, TTF_Fon
                         .w = 40
                     };
 
-        //SDL_FRect dstRect;
-        //dstRect.w = 60; // Largeur fixe pour le texte
-        //dstRect.h = 70; // Hauteur fixe pour le texte
-        //dstRect.x = POS_TROUS[i][0] - dstRect.w / 2; // Centrer le texte
-        //dstRect.y = POS_TROUS[i][1] - dstRect.h / 2; // Centrer le texte
-    
-        // Dessiner la texture du nombre
-        //SDL_RenderTexture(renderer, TextureText, NULL, &dstRect);
         SDL_RenderTexture(renderer,TextureText, NULL, &r1);
         SDL_DestroyTexture(TextureText);
     }
 }
-
-SDL_Texture* loadPlateauBackground(SDL_Renderer * renderer, const char* filepath){
-    SDL_Surface* surface = IMG_Load(filepath);
-    if (!surface){
-        fprintf(stderr, "Erreur de chargement de la surface: %s\n", SDL_GetError());
-        return NULL;
-    } 
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_DestroySurface(surface);
-    return texture;
-}
-
-
-// Plateau de jeu (Pour essai)
-static void drawCercle(int x, int y, int R, SDL_Surface* surface) {
-    if (!surface) return;
-    
-    SDL_LockSurface(surface);
-    
-    int pixelsPerLine = surface->pitch / sizeof(Uint32);
-    Uint32* pixels = (Uint32*)surface->pixels;
-    
-    // Calculer les limites
-    int minX = SDL_max(x - R, 0);
-    int maxX = SDL_min(x + R, surface->w - 1);
-    int minY = SDL_max(y - R, 0);
-    int maxY = SDL_min(y + R, surface->h - 1);
-    
-    // Créer la couleur
-    Uint32 couleurBlanche = SDL_MapRGBA(SDL_GetPixelFormatDetails(surface->format), NULL, 255, 255, 255, 255);
-    
-    // Dessiner
-    for (int i = minX; i <= maxX; i++) {
-        for (int j = minY; j <= maxY; j++) {
-            int dx = i - x;
-            int dy = j - y;
-            if (dx * dx + dy * dy <= R * R) {
-                pixels[j * pixelsPerLine + i] = couleurBlanche;
-            }
-        }
-    }
-    
-    SDL_UnlockSurface(surface);
-}
-
-void drawGameBG(SDL_Renderer* plateauRenderer){
-    SDL_Texture* plateauTexture = IMG_LoadTexture(plateauRenderer, "../assets/images/plateauBg.png");
-    if(!plateauTexture){
-        fprintf(stderr,"Erreur lors du chargement de l'image: %s", SDL_GetError());
-        return;
-    }
-    SDL_RenderTexture(plateauRenderer,plateauTexture,NULL,NULL);
-    SDL_DestroyTexture(plateauTexture);
-    SDL_RenderPresent(plateauRenderer);
-}
-
-SDL_Texture* createSurfaceTexturePlateau(SDL_Renderer * renderer){
-    SDL_Surface* surface = SDL_CreateSurface(1280,720,SDL_PIXELFORMAT_RGBA32); 
-    if (!surface){
-        fprintf(stderr, "Erreur de création de la surface: %s\n", SDL_GetError());
-        return NULL;
-    } 
-    Uint32 blanc = SDL_MapRGBA(SDL_GetPixelFormatDetails(surface->format),NULL,120,120,200, 255);
-    SDL_Rect R1 ={
-        .x =15,
-        .y = 250,
-        .h = 100,
-        .w = 100,
-    };
-    SDL_Rect R2 ={
-        .x =15,
-        .y = 470,
-        .h = 100,
-        .w = 100,
-    };
-
-    SDL_Rect R3 ={
-        .x =125,
-        .y = 120,
-        .h = 580,
-        .w = 1030,
-    };
-    SDL_Rect R4 ={
-        .x =1150,
-        .y = 250,
-        .h = 100,
-        .w = 100,
-    };
-       SDL_Rect R5 ={
-        .x =1150,
-        .y = 250,
-        .h = 100,
-        .w = 100,
-    };
-
-    SDL_FillSurfaceRect(surface,&R1,blanc);
-    SDL_FillSurfaceRect(surface,&R2,blanc);
-    SDL_FillSurfaceRect(surface,&R3,blanc);
-    SDL_FillSurfaceRect(surface,&R4,blanc);
-    SDL_FillSurfaceRect(surface,&R5, blanc);
-    //Dessiner les trous
-    for (int i = 0; i<6;i++){
-        SDL_Rect r1 = { .x = 135+170*i,
-                        .y = 135,
-                        .h = 70,
-                        .w = 160
-                    };
-        SDL_Rect r2 = { .x = 135+170*i,
-                        .y = 615,
-                        .h = 70,
-                        .w = 160
-                    };
-        SDL_FillSurfaceRect(surface,&r1,blanc);
-        SDL_FillSurfaceRect(surface,&r2, blanc);
-        drawCercle(215 + 170*i,300,80, surface);
-        drawCercle(215 + 170*i, 520,80, surface);
-    }
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_DestroySurface(surface);
-    return texture;
-}
-
 
 void displayPlateauWithDelay(
     SDL_Renderer * rendererPlateau,
@@ -278,4 +148,4 @@ void displayPlateauWithDelay(
     SDL_Delay(delayMs); 
 }
 
-//
+/*=========================================== END ================================================*/

@@ -111,12 +111,6 @@ AudioStreamInstance* bg_audioStreamInstance){
         fprintf(stderr, "Erreur dans la création du renderer 1: %s", SDL_GetError());
         return;
     }
-    
-
-    //Renderer responsable de l'affichage du contenu du plateau
-
-   
-    //Renderer responsable de l'affichage des scores de chaque joueurs
 
     // Chargement des affichages de base (backGround)
     SDL_Texture *bgTexture = IMG_LoadTexture(bgRenderer,"../assets/images/plateauAwale.png");
@@ -209,8 +203,6 @@ AudioStreamInstance* bg_audioStreamInstance){
                 }
                 else{
                     pos = bestChoiceAI(ListePions, depht-2);
-                    //pos = MCTS(ListePions, scorePlayer1,scorePlayer2);
-                    //pos = bruteForceMethode(ListePions, scorePlayer1,scorePlayer2);
                 }
                 if (pos != -1){
                     SDL_Delay(1000);
@@ -230,30 +222,8 @@ AudioStreamInstance* bg_audioStreamInstance){
                 }    
             }
             
-            /*if ((!VsAiMode && player1Turn) || !player1Turn){
-                int List2[12];
-                madeInverseList(ListePions, List2);
-                int pos = bestChoiceAI(List2,depht)+6;
-                if (pos!=-1){
-                    SDL_Delay(800);
-                    doTheMoveDisplay(bgRenderer,police,bgTexture,
-                                    graineTexture,handTextureRight,handTextureLeft, 
-                                    ListButtons,nbButtons,
-                                    POS_TROUS, POS_RECT, ListePions, pos,
-                                    VsAiMode, player1Turn,
-                                    &scorePlayer1, &scorePlayer2,
-                                    ListSoundsPions);
-                    finalState = ultimateState(ListePions, player1Turn);
-                    if (finalState){
-                        running = false;
-                        v = false;
-                        break;
-                    }
-                    player1Turn = !player1Turn;
-                }
-            } */
             switch (event.type)
-                {
+               {
                 case SDL_EVENT_MOUSE_BUTTON_DOWN :
                     if (btn_pauseGame.isHover) btn_pauseGame.isPressed = true;
                     if (btn_menuRunning.isHover) btn_menuRunning.isPressed = true;
