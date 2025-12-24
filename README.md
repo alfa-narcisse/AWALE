@@ -1,6 +1,5 @@
 # 🎮 Awale - Jeu de Stratégie Traditionnel
 
-![Licence](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Langage](https://img.shields.io/badge/language-C-orange.svg)
 ![Library](https://img.shields.io/badge/library-SDL3-green.svg)
 
