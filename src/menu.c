@@ -181,7 +181,8 @@ void AfficheMenu( SDL_Window *win, int ListePions[12], AudioStreamInstance* bg_a
     // à ajouter l'action à faire lorsque l'utilisateur choisit l'une des options ai ou 2 players.
     else if( VsAiMode || twoPlayersMode){
         launch_game(win,ListePions, VsAiMode,true, true,15,0,0, bg_audioStreamInstance);
-        //Pour le moment, on met profondeur à 6
+        //Pour le moment, on met profondeur à 15
+        
     }
     else if (quitDirectly){
         SDL_AudioDeviceID id = SDL_GetAudioStreamDevice(bg_audioStreamInstance->stream);

@@ -37,6 +37,7 @@ int getClickedHole(int x, int y, int POS_TROUS[12][2]) {
     return -1; // Aucun trou cliqué
 }
 
+//Losqu'on veut lancer une partie IA contre IA, il suffit d'inverser la liste Plateau.
 void madeInverseList(int srcList[12], int dstList[12]){
     for (int i=0;i<6;i++){
         dstList[i] = srcList[6+i];

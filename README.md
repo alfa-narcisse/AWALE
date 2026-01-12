@@ -30,7 +30,7 @@ Pour que le projet compile avec la configuration actuelle, respectez l'arboresce
 ```text
 .
 ├── assets/         # Images, sons et polices
-├── bin/            # Exécutable généré
+├── build/            # Exécutable généré
 ├── include/        # Fichiers .h
 ├── src/            # Fichiers .c
 ├── SDL3/          # Dossier de la bibliothèque (à installer)
